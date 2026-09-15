@@ -88,12 +88,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
         else {
-            echo json_encode(["success" => false, "error" => "Incorrect password entered"]);
+            // Same message as the no-such-user branch below, deliberately. Distinct
+            // messages let anyone enumerate which addresses hold accounts by reading
+            // the response. A timing side channel remains -- the no-user path skips
+            // password_verify() entirely -- logged in docs/RUNBOOK.md section 15.
+            echo json_encode(["success" => false, "error" => "Invalid email or password"]);
             exit();
         }
     }
     else {
-        echo json_encode(["success" => false, "error" => "No user found"]);
+        echo json_encode(["success" => false, "error" => "Invalid email or password"]);
         exit();
     }
 

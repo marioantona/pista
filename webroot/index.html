@@ -105,10 +105,10 @@
             <!-- Sign Up Form -->
             <form class="form" id="modal-signup-form" style="display: none;">
                 <p class="error-message" id="modal-signup-error"></p>
-                <md-filled-text-field label="Full Name" type="text" name="fullname" required></md-filled-text-field>
+                <md-filled-text-field label="Full Name" type="text" name="fullname" maxlength="100" required></md-filled-text-field>
                 <md-filled-text-field label="Email" type="email" name="email" required></md-filled-text-field>
-                <md-filled-text-field label="Password" type="password" name="password" required></md-filled-text-field>
-                <md-filled-text-field label="Confirm Password" type="password" name="confirm_password" required></md-filled-text-field>
+                <md-filled-text-field label="Password" type="password" name="password" minlength="8" maxlength="72" required></md-filled-text-field>
+                <md-filled-text-field label="Confirm Password" type="password" name="confirm_password" minlength="8" maxlength="72" required></md-filled-text-field>
                 <div class="form-actions">
                     <md-filled-button type="submit" data-i18n="btn-create-acct">Create Account</md-filled-button>
                 </div>
