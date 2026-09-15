@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="100" fill="#1A1040"/>
+  <circle cx="100" cy="100" r="75" fill="none" stroke="#6750A4" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="100" cy="100" r="55" fill="none" stroke="#6750A4" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="100" cy="100" r="35" fill="none" stroke="#EADDFF" stroke-width="0.5" opacity="0.3"/>
+  <path d="M100,25 A75,75 0 0,1 175,100" fill="none" stroke="#B69DF8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M175,100 A75,75 0 0,1 100,175" fill="none" stroke="#6750A4" stroke-width="3" stroke-linecap="round"/>
+  <path d="M100,175 A75,75 0 0,1 25,100" fill="none" stroke="#4A3880" stroke-width="3" stroke-linecap="round"/>
+  <path d="M25,100 A75,75 0 0,1 100,25" fill="none" stroke="#9A7FD4" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <line x1="100" y1="33" x2="100" y2="167" stroke="#EADDFF" stroke-width="0.5" opacity="0.3"/>
+  <line x1="33" y1="100" x2="167" y2="100" stroke="#EADDFF" stroke-width="0.5" opacity="0.3"/>
+  <line x1="47" y1="47" x2="153" y2="153" stroke="#EADDFF" stroke-width="0.5" opacity="0.2"/>
+  <line x1="153" y1="47" x2="47" y2="153" stroke="#EADDFF" stroke-width="0.5" opacity="0.2"/>
+  <polygon points="100,62 105,76 100,71 95,76" fill="#EADDFF"/>
+  <circle cx="100" cy="100" r="8" fill="#6750A4"/>
+  <circle cx="100" cy="100" r="3" fill="#EADDFF"/>
+</svg>

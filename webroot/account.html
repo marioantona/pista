@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PISTA - Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script type="importmap">
+    { "imports": { "@material/web/": "https://esm.run/@material/web/" } }
+    </script>
+    <script type="module">import '@material/web/all.js'</script>
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="account.css">
+    <script type="module" src="account.js"></script>
+    <script src="i18n.js" defer></script>
+</head>
+<body>
+    <aside style="display: flex; flex-direction: column; height: 100vh; box-sizing: border-box;">
+        <div class="sidebar-logo">
+            <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />    
+        </div>
+        <md-list style="flex-grow: 1;">
+            <md-list-item type="button" href="index.html" data-target="backtosearch">
+                <span slot="start" class="material-symbols-outlined">arrow_back</span>
+                <div slot="headline" data-i18n="nav-back">Back</div>
+            </md-list-item>
+            <md-divider></md-divider>
+
+            <md-list-item type="button" data-target="account-details">
+                <span slot="start" class="material-symbols-outlined">person</span>
+                <div slot="headline" data-i18n="nav-account">My Account</div>
+            </md-list-item>
+            <md-list-item type="button" data-target="region-prefs">
+                <span slot="start" class="material-symbols-outlined">public</span>
+                <div slot="headline" data-i18n="nav-unit">Regional Preferences</div>
+            </md-list-item>
+            <md-list-item type="button" data-target="security">
+                <span slot="start" class="material-symbols-outlined">shield</span>
+                <div slot="headline" data-i18n="nav-security">Security</div>
+            </md-list-item>
+            <md-divider></md-divider>
+            <md-list-item type="button" id="theme-toggle-item" data-theme-toggle aria-label="Switch to dark mode">
+                <span slot="start" class="material-symbols-outlined theme-toggle-icon">dark_mode</span>
+                <div slot="headline" data-i18n="nav-toggle-theme">Toggle Theme</div>
+            </md-list-item>
+        </md-list>
+
+        <div class="desktop-logout" style="padding: 24px; border-top: 1px solid var(--md-sys-color-surface-variant);">
+            <md-filled-tonal-button href="logout.php" style="width: 100%;" data-i18n="btn-logout">
+                <md-icon slot="icon">logout</md-icon>
+                Log Out
+            </md-filled-tonal-button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="account-details" class="content-view active">
+            <div class="avatar-container">
+                
+            </div>
+
+            <h1 class="greeting" id="greeting">Good morning,</h1>
+            <h2 style="font-size: 20px; font-weight: 500; color: #1D1B20; margin-top: 32px;" data-i18n="details-header">Personal Details</h2>
+            <form action="details.php" method="POST" class="form-container">
+                <md-filled-text-field id="first_name" name ="first_name" label="First Name" data-i18n="first-name-label"></md-filled-text-field>
+                <md-filled-text-field id="middle_name" name="middle_name" label="Middle Name" data-i18n="middle-name-label"></md-filled-text-field>
+                <md-filled-text-field id="last_name" name="last_name" label="Last Name" data-i18n="last-name-label"></md-filled-text-field>
+                <md-filled-text-field id="date_of_birth" name="date_of_birth" label="Date of Birth" type="date" data-i18n="dob-label"></md-filled-text-field>
+                
+                <md-outlined-select id = "lang" name="lang" label="Language" data-i18n="lang-label">
+                    <md-select-option value="en" selected>English</md-select-option>
+                    <md-select-option value="es">Español</md-select-option>
+                    <md-select-option value="ca">Català</md-select-option>
+                </md-outlined-select>
+
+                <div style="display: flex; gap: 12px; margin-top: 12px;">
+                    <md-filled-button id="save_profile_btn" type="submit" data-i18n="btn-update-profile">Save Details</md-filled-button>  
+                </div>
+            </form>
+
+            <div class="mobile-logout" style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--md-sys-color-surface-variant);">
+                <md-filled-tonal-button href="logout.php" style="width: 100%;" data-i18n="btn-logout">
+                    <md-icon slot="icon">logout</md-icon>
+                    Log Out
+                </md-filled-tonal-button>
+            </div>
+        </div>
+
+        <div id="region-prefs" class="content-view">
+            <h1 class="greeting" data-i18n="unit-header">Regional Preferences</h1>
+            <form action="preferences.php" method="POST" class="form-container">
+                <md-outlined-select id="region-select" name="region" label="Region" data-i18n="region-label">
+                    <md-select-option value="uk" selected>United Kingdom</md-select-option>
+                    <md-select-option value="us">United States</md-select-option>
+                    <md-select-option value="ca">Canada</md-select-option>
+                    <md-select-option value="mx">Mexico</md-select-option>
+                    <md-select-option value="fr">France</md-select-option>
+                    <md-select-option value="es">Spain</md-select-option>
+                    <md-select-option value="de">Germany</md-select-option>
+                    <md-select-option value="it">Italy</md-select-option>
+                    <md-select-option value="nl">Netherlands</md-select-option>
+                    <md-select-option value="ch">Switzerland</md-select-option>
+                    <md-select-option value="jp">Japan</md-select-option>
+                    <md-select-option value="au">Australia</md-select-option>
+                    <md-select-option value="cn">China</md-select-option>
+                    <md-select-option value="in">India</md-select-option>
+                    <md-select-option value="tr">Turkey</md-select-option>
+                    <md-select-option value="ae">United Arab Emirates</md-select-option>
+                </md-outlined-select>
+
+                <md-outlined-select id="distance-select" name="unit" label="Distance Unit" data-i18n="dist-unit-label">
+                    <md-select-option value="km" selected>Kilometers</md-select-option>
+                    <md-select-option value="mi">Miles</md-select-option>
+                </md-outlined-select>
+
+                <md-outlined-select id="currency-select" name="currency" label="Currency" data-i18n="currency-label">
+                    <md-select-option value="gbp" selected>GBP (£) - British Pound</md-select-option>
+                    <md-select-option value="usd">USD ($) - US Dollar</md-select-option>
+                    <md-select-option value="eur">EUR (€) - Euro</md-select-option>
+                    <md-select-option value="jpy">JPY (¥) - Japanese Yen</md-select-option>
+                    <md-select-option value="aud">AUD ($) - Australian Dollar</md-select-option>
+                    <md-select-option value="cad">CAD ($) - Canadian Dollar</md-select-option>
+                    <md-select-option value="chf">CHF (Fr) - Swiss Franc</md-select-option>
+                    <md-select-option value="cny">CNY (¥) - Chinese Yuan</md-select-option>
+                    <md-select-option value="inr">INR (₹) - Indian Rupee</md-select-option>
+                    <md-select-option value="aed">AED (د.إ) - UAE Dirham</md-select-option>
+                </md-outlined-select>
+                
+                <md-filled-button id="save-preferences-btn"style="margin-top: 12px;" type="submit" data-i18n="btn-save-prefs">Save Preferences</md-filled-button>
+                </form>
+            </div>
+        </div>
+
+        <div id="security" class="content-view">
+            <h1 class="greeting" data-i18n="security-header">Security</h1>
+            <div class="form-container">
+                <h3 style="margin-top: 0;" data-i18n="acct-mgmt-header">Account Management</h3>
+                <p style="color: #49454F; font-size: 14px;" data-i18n="acct-mgmt-desc">Deleting your account will permanently remove all your data, including travel history and preferences. This action cannot be undone.</p>
+                
+                <md-filled-button class="error-btn" onclick="window.location.href='DeleteAccount.html';" data-i18n="btn-delete-acct">
+                    <span slot="icon" class="material-symbols-outlined">delete</span>
+                    Delete Account
+                </md-filled-button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const menuItems = document.querySelectorAll('md-list-item[data-target]');
+        const views = document.querySelectorAll('.content-view');
+
+        const defaultItem = document.querySelector("md-list-item[data-target='account-details']")
+        if (defaultItem) defaultItem.classList.add("active")
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                if (!targetId || targetId === "backtosearch") return;
+                
+                // Indicate active menu item
+                menuItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                // Hide all views
+                views.forEach(view => view.classList.remove('active'));
+                
+                // Display Selected View
+                const targetView = document.getElementById(targetId);
+                if (targetView) {
+                    targetView.classList.add('active');
+                }
+            });
+        });
+
+        function getCookie(name) {
+            const cookies = document.cookie.split('; ');
+            for (const cookie of cookies) {
+                const [key, value] = cookie.split('=');
+                if (key === name) return decodeURIComponent(value);
+            }
+            return null;
+        }
+    </script>
+</body>
+</html>

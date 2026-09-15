@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PISTA - Saved Trips</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script type="importmap">
+        { "imports": { "@material/web/": "https://esm.run/@material/web/" } }
+    </script>
+    <script type="module">import "@material/web/all.js"</script>
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="account.css">
+    <script type="module" src="itineraries.js"></script>
+    <script src="i18n.js" defer></script>
+</head>
+<body>
+    <aside style="width: 250px;">
+        <div class="sidebar-logo">
+            <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />
+        </div>
+        <md-list>
+            <md-list-item type="button" href="index.html">
+                <span slot="start" class="material-symbols-outlined">arrow_back</span>
+                <div slot="headline" data-i18n="nav-back">Back</div>
+            </md-list-item>
+        </md-list>    
+    </aside>
+
+    <main style="padding-top: 40px;">
+        <div class="content-view active" style="max-width: 800px; margin: 0 auto;">
+            <h1 class="greeting" style="margin-bottom: 8px;" data-i18n="saved-trips-header">Saved Itineraries</h1>
+            <p style="color: var(--md-sys-color-on-surface-variant); margin-top: 0; margin-bottom: 24px;" data-i18n="saved-trips-desc">Review and manage your upcoming trips.</p>
+
+            <div id="saved-itineraries-container" class="data-box" style="max-height: none;">
+                <div style="display: flex; justify-content: center; padding: 40px;"><md-circular-progress intermediate></md-circular-progress></div>
+            </div>
+        </div>    
+    </main>
+</body>
+</html>

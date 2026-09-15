@@ -1,0 +1,40 @@
+# ─── Secrets ──────────────────────────────────────────────────────────────
+# Unanchored, so these match at every depth: webroot/.env, pista-api/.env,
+# deploy/var-www/pista.env.
+.env
+*.env
+# Belt and braces. Nothing above actually matches *.env.example, but this keeps
+# the intent explicit if the patterns above are ever widened to .env*.
+!*.env.example
+
+# ─── Dependency trees (rebuilt, never committed) ──────────────────────────
+# MUST stay unanchored. A leading slash would stop matching after the move to
+# webroot/vendor/ and pista-api/node_modules/, and the next `git add -A` would
+# commit the whole Composer tree.
+vendor/
+node_modules/
+
+# ─── Runtime artefacts ────────────────────────────────────────────────────
+*.log
+output_history/
+*.bak
+*~
+
+# ─── Local working files, deliberately out of the repo ────────────────────
+/deploy/claude-prompt.txt
+/deploy/extra-files/keys/
+/deploy/extra-files/plan/old1/PISTA-RUNBOOK.md
+
+# ─── Database dumps — never commit one, they contain user data ────────────
+*.sql.gz
+/backups/
+
+# ─── Claude Code: share the config, keep machine-local bits private ───────
+# .claude/settings.json, .claude/rules/ and .claude/hooks/ ARE tracked.
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ─── Editors / OS ─────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/

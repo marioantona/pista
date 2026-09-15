@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="100" fill="#0D1A33"/>
+  <polygon points="100,35 130,52 130,87 100,104 70,87 70,52" fill="none" stroke="#4A90D9" stroke-width="1.2" opacity="0.6"/>
+  <polygon points="100,104 130,121 130,156 100,173 70,156 70,121" fill="none" stroke="#4A90D9" stroke-width="1.2" opacity="0.6"/>
+  <polygon points="40,70 70,52 70,87 40,104 10,87 10,70" fill="none" stroke="#2C5F8A" stroke-width="0.5" opacity="0.35"/>
+  <polygon points="160,70 190,52 190,87 160,104 130,87 130,52" fill="none" stroke="#2C5F8A" stroke-width="0.5" opacity="0.35"/>
+  <polygon points="40,130 70,121 70,156 40,173 10,156 10,139" fill="none" stroke="#2C5F8A" stroke-width="0.5" opacity="0.25"/>
+  <polygon points="160,130 190,121 190,156 160,173 130,156 130,121" fill="none" stroke="#2C5F8A" stroke-width="0.5" opacity="0.25"/>
+  <polygon points="100,35 130,52 130,87 100,104 70,87 70,52" fill="#4A90D9" opacity="0.07"/>
+  <polygon points="100,104 130,121 130,156 100,173 70,156 70,121" fill="#4A90D9" opacity="0.05"/>
+  <line x1="100" y1="35" x2="100" y2="173" stroke="#7AB3E8" stroke-width="0.5" opacity="0.35"/>
+  <line x1="70" y1="52" x2="130" y2="156" stroke="#7AB3E8" stroke-width="0.5" opacity="0.25"/>
+  <line x1="130" y1="52" x2="70" y2="156" stroke="#7AB3E8" stroke-width="0.5" opacity="0.25"/>
+  <circle cx="100" cy="104" r="9" fill="#4A90D9" opacity="0.8"/>
+  <circle cx="100" cy="104" r="3.5" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="100" cy="35" r="3.5" fill="#7AB3E8" opacity="0.7"/>
+  <circle cx="100" cy="173" r="3.5" fill="#7AB3E8" opacity="0.7"/>
+</svg>

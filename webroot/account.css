@@ -1,0 +1,486 @@
+:root {
+    --md-sys-color-primary: #6750A4;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #EADDFF;
+    --md-sys-color-on-primary-container: #21005D;
+    --md-sys-color-surface: #DDE3F9;
+    --md-sys-color-on-surface: #1B1B1F;
+    --md-sys-color-surface-container: #F3F3F8;
+    --md-sys-color-surface-variant: #E7E0EB;
+    --md-sys-color-on-surface-variant: #49454F;
+    --md-sys-color-outline: #79747E;
+
+    /* Local semantic aliases used in this sheet */
+    --pista-card-avatar-color: #6750A4;
+    --pista-card-bg: #FFFFFF;
+    --pista-card-avatar-bg: #F3EDFF;
+    --pista-active-item-bg: #EAE0FA;
+    --pista-greeting-color: #1D1B20;
+    --pista-form-bg: #FFFFFF;
+}
+
+/* DARK THEME OVERRIDES */
+[data-theme="dark"] {
+    --md-sys-color-primary: #D0BCFF;
+    --md-sys-color-on-primary: #381E72;
+    --md-sys-color-primary-container: #4F378B;
+    --md-sys-color-on-primary-container: #EADDFF;
+    --md-sys-color-surface: #141218;
+    --md-sys-color-on-surface: #E6E1E5;
+    --md-sys-color-surface-container: #1C1B1F;
+    --md-sys-color-surface-variant: #49454F;
+    --md-sys-color-on-surface-variant: #CAC4D0;
+    --md-sys-color-outline: #938F99;
+
+    /* Local semantic aliases — dark values */
+    --pista-card-avatar-color: #EADDFF;
+    --pista-card-bg: #2B2930;
+    --pista-card-avatar-bg: #4F378B;
+    --pista-active-item-bg: #4F378B;
+    --pista-greeting-color: #E6E1E5;
+    --pista-form-bg: #2B2930;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--md-sys-color-surface);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Sidebar Layout --- */
+aside {
+    width: 320px;
+    background-color: var(--md-sys-color-surface-container);
+    margin: 24px;
+    border-radius: 28px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.nav-section-title {
+    padding: 16px;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+}
+
+md-list {
+    background: transparent;
+}
+
+md-list-item {
+    margin-bottom: 4px;
+    transition: 0.1s;
+}
+
+md-list-item.active {
+    background-color: var(--pista-active-item-bg);
+    border-radius: 16px;
+    --md-list-item-label-text-color: var(--md-sys-color-primary);
+}
+
+md-list-item .material-symbols-outlined {
+    color: var(--md-sys-color-primary);
+}
+
+md-list-item[data-target="backtosearch"] {
+    --md-list-item-hover-state-layer-color: transparent;
+    --md-list-item-pressed-state-layer-color: transparent;
+}
+
+md-divider {
+    margin-bottom: 20px;
+}
+/* --- Main Content Layout --- */
+main {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- Avatar--- */
+.avatar-container {
+    width: clamp(120px, 20vw, 200px);
+    height: clamp(120px, 20vw, 200px);
+    background-color: var(--pista-card-avatar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; 
+    margin-bottom: 24px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.avatar-container .material-symbols-outlined {
+    font-size: 120px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.greeting {
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 400;
+    margin-bottom: 48px;
+    color: var(--pista-greeting-color);
+    text-align: center;
+}
+
+/* --- Cards Section --- */
+.suggestion-section {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.suggestion-title {
+    font-weight: 500;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.card-grid {
+    display: grid;
+    /* Creates as many columns as fit, but forces them to drop to next line if screen too small! */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.m3-card {
+    background: var(--pista-card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--pista-card-avatar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--pista-card-avatar-color);
+}
+
+.card-text .headline { font-weight: 500; font-size: 14px; display: block; }
+.card-text .subline { font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+
+.card-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background-color: #eee;
+}
+
+.card-actions {
+    padding: 8px 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* --- Bottom Buttons --- */
+.bottom-actions {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-between;
+}
+
+md-filled-tonal-button {
+    --md-filled-tonal-button-container-color: #F3F3F8;
+}
+
+/* --- Hide All Views and Display Active Views --- */
+.content-view {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+}
+
+.content-view.active {
+    display: flex;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: var(--pista-form-bg);
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+md-filled-text-field, md-outlined-select {
+    width: 100%;
+}
+
+.error-btn {
+    --md-filled-button-container-color: #BA1A1A;
+}
+
+/* --- Saved Itineraries Dashboard --- */
+.itinerary-dashboard {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#saved-itineraries-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* Recreating the flight card specifically for the account page */
+.flight-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: 16px;
+    background-color: var(--pista-card-bg);
+    border: 1px solid var(--md-sys-color-surface-variant, #CAC4D0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+.flight-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.flight-card .airline-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.flight-card .route {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 8px;
+}
+
+/* --- Missing Text Styles for Flight Cards --- */
+.flight-card .details {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.flight-card .date {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+}
+
+.flight-card .price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--md-sys-color-primary); /* Makes the total cost pop in purple! */
+}
+
+.itinerary-tab {
+    margin-bottom: 1.2em;
+}
+
+.mobile-logout {
+    display: none;
+}
+
+.desktop-logout {
+    display: block;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px 16px 16px;
+}
+
+.sidebar-logo img {
+    height: 32px;
+    width: auto;
+    max-width: 180px;
+    object-fit: contain;
+}
+
+/* Theme toggle list item icon colour */
+#theme-toggle-item .material-symbols-outlined {
+    color: var(--md-sys-color-primary);
+}
+
+/* dark mode: md-filled-text-field inputs */
+[data-theme="dark"] md-filled-text-field {
+    --md-filled-text-field-container-color: #2B2930;
+    --md-filled-text-field-input-text-color: #E6E1E5;
+    --md-filled-text-field-label-text-color: #CAC4D0;
+    --md-filled-text-field-focus-label-text-color: #D0BCFF;
+    --md-filled-text-field-hover-label-text-color: #CAC4D0;
+    --md-filled-text-field-focus-active-indicator-color: #D0BCFF;
+    --md-filled-text-field-active-indicator-color: #938F99;
+    --md-filled-text-field-leading-icon-color: #CAC4D0;
+    --md-filled-text-field-caret-color: #D0BCFF;
+}
+
+/* dark mode: md-outlined-select dropdowns */
+[data-theme="dark"] md-outlined-select {
+    /* The text field part */
+    --md-outlined-select-text-field-input-text-color: #E6E1E5;
+    --md-outlined-select-text-field-label-text-color: #CAC4D0;
+    --md-outlined-select-text-field-outline-color: #938F99;
+    --md-outlined-select-text-field-focus-outline-color: #D0BCFF;
+    --md-outlined-select-text-field-focus-label-text-color: #D0BCFF;
+    --md-outlined-select-text-field-hover-outline-color: #CAC4D0;
+    --md-outlined-select-text-field-caret-color: #D0BCFF;
+    /* The dropdown menu container */
+    --md-menu-container-color: #2B2930;
+    /* All list items */
+    --md-list-item-label-text-color: #E6E1E5;
+    --md-list-item-supporting-text-color: #CAC4D0;
+    /* The selected item gets a tinted container — keep it dark */
+    --md-list-item-selected-container-color: #4F378B;
+    --md-select-option-selected-label-text-color: #EADDFF;
+    /* Hover ripple */
+    --md-list-item-hover-state-layer-color: #D0BCFF;
+    --md-list-item-hover-state-layer-opacity: 0.12;
+}
+
+/* dark mode: personal details section heading*/
+[data-theme="dark"] h2[data-i18n="details-header"],
+[data-theme="dark"] .form-container h3 {
+    color: var(--md-sys-color-on-surface);
+}
+
+/* dark mode: Catch-all for any other inline-styled headings in form-container */
+[data-theme="dark"] .form-container {
+    color: var(--md-sys-color-on-surface);
+}
+
+/* dark mode: Security tab - "Account Management" heading and description */
+[data-theme="dark"] #security .form-container h3 {
+    color: var(--md-sys-color-on-surface);
+}
+
+[data-theme="dark"] #security .form-container p {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* dark mode: Delete Account button */
+.error-btn {
+    --md-filled-button-container-color: #BA1A1A;
+    --md-filled-button-label-text-color: #FFFFFF;
+    --md-filled-button-hover-label-text-color: #FFFFFF;
+    --md-filled-button-pressed-label-text-color: #FFFFFF;
+    --md-filled-button-focus-label-text-color: #FFFFFF;
+    --md-filled-button-icon-color: #FFFFFF;
+}
+
+/* dark mode: account sidebar buttons */
+[data-theme="dark"] md-filled-tonal-button {
+    --md-filled-tonal-button-container-color: #2B2930;
+    --md-filled-tonal-button-label-text-color: #E6E1E5;
+    --md-filled-tonal-button-icon-color: #E6E1E5;
+    --md-filled-tonal-button-hover-label-text-color: #EADDFF;
+    --md-filled-tonal-button-hover-icon-color: #EADDFF;
+}
+
+/* mobile responsiveness for account dashboard */
+@media (max-width: 850px) {
+    body {
+        flex-direction: column; /* stack sidebar and main content vertically */
+        overflow-y: auto; /* allow whole page to scroll */
+    }
+
+    aside {
+        width: auto;
+        margin: 16px 16px 0 16px;
+        padding: 12px;
+    }
+
+    /* turn the sidebar list into a horizontal scrollable menu */
+    md-list {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 8px;
+        -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        padding-right: 24px;
+    }
+
+    md-list::-webkit-scrollbar {
+        display: none; /* hide scrollbars */
+    }
+
+    md-list-item {
+        flex-shrink: 0; /* stop buttons from squishing */
+        margin-bottom: 0;
+    }
+
+    main {
+        padding: 20px 16px;
+        overflow-y: visible;
+    }
+
+    .bottom-actions {
+        flex-direction: column; /* stack FAQ and logout buttons */
+        gap: 12px;
+    }
+
+    .flight-card {
+        flex-direction: column; /* stack airline logo above text on mobile */
+        align-items: flex-start;
+    }
+
+    .itinerary-tab {
+        margin-bottom: 0 !important;
+    }
+
+    .mobile-logout {
+        display: block;
+    }
+
+    .desktop-logout {
+        display: none;
+    }
+}

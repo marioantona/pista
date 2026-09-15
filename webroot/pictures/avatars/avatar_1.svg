@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs><clipPath id="c1"><rect width="200" height="200" rx="100"/></clipPath></defs>
+  <rect width="200" height="200" rx="100" fill="#0D1B2A"/>
+  <g clip-path="url(#c1)">
+    <polygon points="0,155 35,112 62,133 90,95 122,128 160,100 200,122 200,200 0,200" fill="#1E4D7A" opacity="0.7"/>
+    <polygon points="0,175 45,145 78,160 112,138 150,155 200,142 200,200 0,200" fill="#0A1F35" opacity="0.9"/>
+    <circle cx="100" cy="82" r="32" fill="#E07B2A" opacity="0.15"/>
+    <circle cx="100" cy="82" r="22" fill="#E07B2A" opacity="0.2"/>
+    <circle cx="100" cy="82" r="13" fill="#F4A261" opacity="0.75"/>
+    <line x1="100" y1="52" x2="100" y2="62" stroke="#F4A261" stroke-width="1.5" opacity="0.6"/>
+    <line x1="100" y1="102" x2="100" y2="112" stroke="#F4A261" stroke-width="1.5" opacity="0.6"/>
+    <line x1="70" y1="82" x2="80" y2="82" stroke="#F4A261" stroke-width="1.5" opacity="0.6"/>
+    <line x1="120" y1="82" x2="130" y2="82" stroke="#F4A261" stroke-width="1.5" opacity="0.6"/>
+    <line x1="79" y1="61" x2="85" y2="67" stroke="#F4A261" stroke-width="1.5" opacity="0.4"/>
+    <line x1="121" y1="61" x2="115" y2="67" stroke="#F4A261" stroke-width="1.5" opacity="0.4"/>
+  </g>
+</svg>

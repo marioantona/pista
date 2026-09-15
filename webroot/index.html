@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PISTA</title>
+
+    <!-- Leaflet Map Below -->
+    <link rel="icon" type="image/svg+xml" id="pista-favicon" href="pictures/logos/favicon-light.svg" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Material You Design Below -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+    </script>
+    <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+    </script>
+    <script src="theme.js"></script>
+    <script type="module" src="index.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <script src="i18n.js" defer></script>
+</head>
+<body>
+    <!-- Leaflet Map Below -->
+    <div id="map" style="width: 100%; height: 100%;"></div>
+    <!-- Upper Layer -->
+    <nav class="top-nav">
+        <div>
+            <md-filled-tonal-button id="pista" href="index.html" aria-label="PISTA home">
+                <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />
+            </md-filled-tonal-button>
+            <md-filled-button id="nav-flights" class="icontext">
+                <svg slot="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m397-115-99-184-184-99 71-70 145 25 102-102-317-135 84-86 385 68 124-124q23-23 57-23t57 23q23 23 23 56.5T822-709L697-584l68 384-85 85-136-317-102 102 26 144-71 71Z"/></svg>
+                <span class="nav-label" data-i18n="nav-flights">Flights</span>
+            </md-filled-button>
+            <md-filled-button id="nav-itineraries" class="icontext">
+                <svg slot="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v200h-80v-40H200v400h280v80H200Zm0-560h560v-80H200v80Zm0 0v-80 80ZM560-80v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L683-80H560Zm300-263-37-37 37 37ZM620-140h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z"/></svg>
+                <span class="nav-label" data-i18n="nav-itineraries">Itineraries</span>
+            </md-filled-button>
+        </div>
+        <div>
+            <md-filled-tonal-button class="circle" onclick="document.getElementById('welcome-modal').style.display='flex'">
+                <md-icon style="color: #1f1f1f; font-size: 24px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">info</md-icon>
+            </md-filled-tonal-button>
+            <md-filled-tonal-button class="circle" data-theme-toggle aria-label="Switch to dark mode">
+                <md-icon style="font-size: 24px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">dark_mode</md-icon>
+            </md-filled-tonal-button>
+            <md-filled-tonal-button class="circle" href="itineraries.html" style="display: flex; align-items: center; justify-content: center;">
+                <md-icon style="color: #1f1f1f; font-size: 24px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">airplane_ticket</md-icon>
+            </md-filled-tonal-button>
+            <md-filled-tonal-button id="signin-nav-btn" style="display: none;" onclick="document.getElementById('auth-modal').style.display='flex'">
+                <md-icon slot="icon">login</md-icon>
+                Sign In
+            </md-filled-tonal-button>
+            <md-filled-tonal-button class='circle' href="account.html"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm146.5-204.5Q340-521 340-580t40.5-99.5Q421-720 480-720t99.5 40.5Q620-639 620-580t-40.5 99.5Q539-440 480-440t-99.5-40.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm100-95.5q47-15.5 86-44.5-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160q53 0 100-15.5ZM523-537q17-17 17-43t-17-43q-17-17-43-17t-43 17q-17 17-17 43t17 43q17 17 43 17t43-17Zm-43-43Zm0 360Z"/></svg></md-filled-tonal-button>
+        </div>
+    </nav>
+
+    <!-- New Auth Modal Overlay -->
+    <div id="auth-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div class="auth-card" style="position: relative; max-height: 90vh; overflow-y: auto;">
+            <div class="logo">
+                <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />
+                <p data-i18n="auth-subtitle">Passenger Itinerary Search & Ticketing Algorithm</p>
+            </div>
+            <div class="tabs">
+                <md-filled-tonal-button class="tab" id="modal-login-tab" onclick="switchModalTab('login')" style="--md-filled-tonal-button-container-color: #6750A4;" data-i18n="tab-login">Login</md-filled-tonal-button>
+                <md-filled-tonal-button class="tab" id="modal-signup-tab" onclick="switchModalTab('signup')" style="--md-filled-tonal-button-container-color: rgba(255,255,255,0.1);" data-i18n="tab-signup">Sign Up</md-filled-tonal-button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="form active" id="modal-login-form">
+                <p class="error-message" id="modal-login-error"></p>
+                <md-filled-text-field label="Email" type="email" name="email" required></md-filled-text-field>
+                <md-filled-text-field label="Password" type="password" name="password" required></md-filled-text-field>
+
+                <div class="remember-row">
+                    <label>
+                        <input type="checkbox" name="remember">
+                        <span data-i18n="remember-me">Remember Me</span>
+                    </label>
+                    <a href="ForgotPass.html" data-i18n="forgot-pass-link">Forgot Password?</a>
+                </div>
+
+                <div class="form-actions">
+                    <md-filled-button type="submit" data-i18n="btn-login">Login</md-filled-button>
+                </div>
+                <div class="divider">or</div>
+                <div class="social-login">
+                    <md-filled-tonal-button type="button" onclick="initiateOAuth('google')" style="--md-filled-tonal-button-container-color: rgba(255,255,255,0.1);"><md-icon slot="icon">login</md-icon> Continue with Google</md-filled-tonal-button>
+                    <md-filled-tonal-button type="button" onclick="initiateOAuth('microsoft')" style="--md-filled-tonal-button-container-color: rgba(255,255,255,0.1);"><md-icon slot="icon">login</md-icon> Continue with Microsoft</md-filled-tonal-button>
+                </div>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form class="form" id="modal-signup-form" style="display: none;">
+                <p class="error-message" id="modal-signup-error"></p>
+                <md-filled-text-field label="Full Name" type="text" name="fullname" required></md-filled-text-field>
+                <md-filled-text-field label="Email" type="email" name="email" required></md-filled-text-field>
+                <md-filled-text-field label="Password" type="password" name="password" required></md-filled-text-field>
+                <md-filled-text-field label="Confirm Password" type="password" name="confirm_password" required></md-filled-text-field>
+                <div class="form-actions">
+                    <md-filled-button type="submit" data-i18n="btn-create-acct">Create Account</md-filled-button>
+                </div>
+                <div class="divider">or</div>
+                <div class="social-login">
+                    <md-filled-tonal-button type="button" onclick="initiateOAuth('google')" style="--md-filled-tonal-button-container-color: rgba(255,255,255,0.1);"><md-icon slot="icon">login</md-icon> Continue with Google</md-filled-tonal-button>
+                    <md-filled-tonal-button type="button" onclick="initiateOAuth('microsoft')" style="--md-filled-tonal-button-container-color: rgba(255,255,255,0.1);"><md-icon slot="icon">login</md-icon> Continue with Microsoft</md-filled-tonal-button>
+                </div>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <md-text-button id="continue-guest-btn" data-i18n="btn-guest">Continue as Guest</md-text-button>
+            </div>
+        </div>
+    </div>
+
+    <div id="welcome-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2001; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div class="auth-card" style="position: relative; max-height: 90vh; overflow-y: auto; background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface);">
+            <div style="text-align: right; margin-bottom: -24px; position: relative; z-index: 10;">
+                <md-icon-button onclick="document.getElementById('welcome-modal').style.display='none'">
+                    <md-icon>close</md-icon>
+                </md-icon-button>
+            </div>
+            <h2 style="color: var(--md-sys-color-primary); font-size: 24px; text-align: center; margin-bottom: 16px;">About PISTA</h2>
+            <p style="margin-bottom: 16px; font-size: 14px; line-height: 1.5; color: var(--md-sys-color-on-surface-variant);">Welcome to PISTA, your go-to guide and routing engine for backpacking and multi-city European travel. We know how frustrating it is to manually piece together complex itineraries. That's why we built a proprietary algorithmic flight builder tailored for digital nomads and budget travelers.</p>
+
+            <h3 style="color: var(--md-sys-color-primary); font-size: 18px; margin-top: 20px; margin-bottom: 12px;">How It Works</h3>
+            <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--md-sys-color-on-surface-variant);">
+                <li style="margin-bottom: 8px;"><strong>1. Choose your parameters:</strong> Tell us your origin, flexible dates, how many places you want to visit, and how long you want to stay in each.</li>
+                <li style="margin-bottom: 8px;"><strong>2. The Algorithm Runs:</strong> Our custom search algorithm analyzes thousands of route combinations to find the cheapest logical path.</li>
+                <li style="margin-bottom: 8px;"><strong>3. Book Securely:</strong> Review our route suggestions, then click through our trusted partner links to book your tickets securely.</li>
+            </ul>
+            <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--md-sys-color-surface-variant);">
+                <p style="font-size: 14px; margin-bottom: 12px; color: var(--md-sys-color-on-surface-variant);">Need more assistance?</p>
+                <md-filled-tonal-button href="help.html" data-i18n="btn-help">Help & Support</md-filled-tonal-button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div id="step1" class="vertical" style="display: flex;">
+            <div class="horizontal">
+                <md-icon-button class="back-btn">
+                  <md-icon><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></md-icon>
+                </md-icon-button>
+                <strong data-i18n="search-header">Search Flight</strong>
+            </div>
+
+            <!-- Wrapped Inputs -->
+            <div style="position: relative; width: 100%;">
+                <md-outlined-text-field id="returnStartEndDestination" label="Start / End Destination*" style="width: 100%;" data-i18n="start-dest-label"></md-outlined-text-field>
+                <div id="origin-autocomplete" class="autocomplete-items"></div>
+            </div>
+            <div class="horizontal mobile-row">
+                <md-outlined-select id="returnTravelRegion" label="Travel Region" style="flex: 1;" data-i18n="travel-region-label">
+                    <md-select-option value="any" selected>Any / Global</md-select-option>
+                    <md-select-option value="mediterranean">Mediterranean</md-select-option>
+                    <md-select-option value="western_europe">Western Europe</md-select-option>
+                    <md-select-option value="eastern_europe">Eastern Europe</md-select-option>
+                    <md-select-option value="northern_europe">Scandinavia & Nordics</md-select-option>
+                    <md-select-option value="southern_europe">Southern Europe</md-select-option>
+                    <md-select-option value="central_europe">Central Europe</md-select-option>
+                    <md-select-option value="balkans">The Balkans</md-select-option>
+                    <md-select-option value="baltics">The Baltics</md-select-option>
+                    <md-select-option value="british_isles">British Isles</md-select-option>
+                    <md-select-option value="north_america">North America</md-select-option>
+                    <md-select-option value="central_america">Central America</md-select-option>
+                    <md-select-option value="caribbean">The Caribbean</md-select-option>
+                    <md-select-option value="south_america">South America</md-select-option>
+                    <md-select-option value="southeast_asia">Southeast Asia</md-select-option>
+                    <md-select-option value="east_asia">East Asia</md-select-option>
+                    <md-select-option value="south_asia">South Asia</md-select-option>
+                    <md-select-option value="central_asia">Central Asia</md-select-option>
+                    <md-select-option value="middle_east">Middle East</md-select-option>
+                    <md-select-option value="north_africa">North Africa</md-select-option>
+                    <md-select-option value="east_africa">East Africa</md-select-option>
+                    <md-select-option value="southern_africa">Southern Africa</md-select-option>
+                    <md-select-option value="west_africa">West Africa</md-select-option>
+                    <md-select-option value="central_africa">Central Africa</md-select-option>
+                    <md-select-option value="oceania">Oceania (Aus & NZ)</md-select-option>
+                    <md-select-option value="polynesia_pacific">Pacific Islands</md-select-option>
+                </md-outlined-select>
+            </div>
+
+            <div class="horizontal mobile-row">
+                <div style="display: flex; align-items: center; width: 50%; gap: 4px;">
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnNumberOfDestinations', -1)"><md-icon>remove</md-icon></md-icon-button>
+                    <md-outlined-text-field id="returnNumberOfDestinations" label="Destinations*" type="number" value="1" min="1" max="10" style="flex: 1; text-align: center;" data-i18n="num-dest-label"></md-outlined-text-field>
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnNumberOfDestinations', 1)"><md-icon>add</md-icon></md-icon-button>
+                </div>
+                <div style="display: flex; align-items: center; width: 50%; gap: 4px;">
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', -1)"><md-icon>remove</md-icon></md-icon-button>
+                    <md-outlined-text-field id="returnDaysPerDestination" label="Days / Leg*" type="number" value="1" min="1" max="10" style="flex: 1; text-align: center;" data-i18n="days-per-dest-label"></md-outlined-text-field>
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', 1)"><md-icon>add</md-icon></md-icon-button>
+                </div>
+            </div>
+            <div class="horizontal mobile-row">
+                <md-outlined-text-field id="returnDate" label="Date*" type="date" style="flex: 1;" data-i18n="date-label"></md-outlined-text-field>
+
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', -1)"><md-icon>remove</md-icon></md-icon-button>
+                    <md-outlined-text-field id="returnAdult" label="Adult" type="number" value="1" min="1" style="width: 70px; text-align: center;" data-i18n="adult-label"></md-outlined-text-field>
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', 1)"><md-icon>add</md-icon></md-icon-button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', -1)"><md-icon>remove</md-icon></md-icon-button>
+                    <md-outlined-text-field id="returnChild" label="Child" type="number" value="0" min="0" style="width: 70px; text-align: center;" data-i18n="child-label"></md-outlined-text-field>
+                    <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', 1)"><md-icon>add</md-icon></md-icon-button>
+                </div>
+            </div>
+            
+            <details class ="advanced-options-accordion" id="advancedOptionsAccordion">
+                <summary data-i18n="advanced-options-toggle">Advanced Options</summary>
+                <div class="advanced-options-body">
+
+                    <div style="position: relative; width: 100%;">
+                        <md-outlined-text-field id="returnDesiredDestinations" label="Desired Destinations" style="width: 100%;" data-i18n="desired-dest-label"></md-outlined-text-field>
+                        <div id="dest-autocomplete" class="autocomplete-items"></div>
+                    </div>
+
+                    <div style="position: relative; flex: 1;">
+                        <md-outlined-text-field id="returnAvoidCountries" label="Avoid Countries" style="width: 100%;" data-i18n="avoid-countries-label"></md-outlined-text-field>
+                        <div id="avoid-autocomplete" class="autocomplete-items"></div>
+                    </div>
+                    
+                    <div class="checkbox-container" style="margin-top: 4px; margin-bottom: 4px;">
+                        <md-checkbox id="returnAvoidOriginCountry"></md-checkbox>
+                        <label for="returnAvoidOriginCountry" style="color: var(--md-sys-color-on-surface-variant); font-size: 14px; cursor: pointer;" data-i18n="avoid-origin-label">Avoid Origin Country</label>
+                    </div>
+                </div>
+            </details>
+
+            <md-filled-button id="search-btn" class="next-btn" data-i18n="search-btn">Search</md-filled-button>
+        </div>
+
+
+        <div id="step2" class="vertical" style="display: none">
+            <div class="horizontal">
+                <md-icon-button class="back-btn">
+                  <md-icon><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></md-icon>
+                </md-icon-button>
+                <strong data-i18n="step2-header">Best Matches</strong>
+            </div>
+            <div id="step2db" class="data-box">
+                <p>No Data Presented</p>
+            </div>
+            <md-filled-button class="next-btn" data-i18n="step2-btn">Book Itinerary</md-filled-button>
+        </div>
+
+        <div id="step3" class="vertical" style="display: none">
+            <div class="horizontal">
+                <md-icon-button class="back-btn">
+                  <md-icon><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></md-icon>
+                </md-icon-button>
+                <strong data-i18n="step3-header">Confirmation</strong>
+            </div>
+            <div id='step3db' class="data-box">
+                <p>No Data Presented</p>
+            </div>
+            <md-filled-button class="next-btn" data-i18n="step3-btn">Confirm</md-filled-button>
+        </div>
+
+        <div id="step4" class="vertical" style="display: none">
+            <div class="horizontal">
+                <md-icon-button class="back-btn">
+                  <md-icon><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></md-icon>
+                </md-icon-button>
+                <strong data-i18n="step4-header">Redirecting</strong>
+            </div>
+        <p style="text-align: center;" data-i18n="step4-msg1">Thank you for booking with us today!</p>
+            <div id="step4db" class="data-box">
+                <p>No Data Presented</p>
+            </div>
+        <p style="font-size: 14px; text-align: center;" data-i18n="step4-msg2">You will be redirected in 3s...</p>
+        <p style="font-size: 12px; text-align: center; color: #428eff;" data-i18n="step4-msg3">Not Redirected? Click here.</p>
+        </div>
+
+        <div id="step5" class="vertical" style="display: none">
+            <div class="horizontal">
+                <md-icon-button class="back-btn">
+                  <md-icon><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></md-icon>
+                </md-icon-button>
+                <strong>Your Itineraries</strong>
+            </div>
+            <div id="step5db" class="data-box">
+                <p>No Data Presented</p>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 24px; font-family: Roboto, sans-serif; font-size: 12px; color: #79747E; margin-top: auto;">
+        <p style="margin: 0;">&copy; 2026 PISTA Flights. All rights reserved.</p>
+        <div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px;">
+            <a href="privacy.html" style="color: #6750A4; text-decoration: none;">Privacy Policy</a>
+            <a href="terms.html" style="color: #6750A4; text-decoration: none;">Terms of Service</a>
+            <a href="help.html" style="color: #6750A4; text-decoration: none;">Contact Us</a>
+        </div>
+    </footer>
+</body>
+</html>

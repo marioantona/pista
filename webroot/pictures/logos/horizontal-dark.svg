@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 40 1060 300">
+
+  <g id="icon">
+
+    <!-- ── Runway ─────────────────────────────────────────────────── -->
+    <!-- Solid edge line — thick, light lavender -->
+    <line x1="20" y1="310" x2="430" y2="310" stroke="#EADDFF" stroke-width="7"/>
+    <!-- Centerline dashes — muted gray, positioned BELOW the solid edge line -->
+    <rect x="44"  y="317" width="32" height="8" rx="2" fill="#79747E"/>
+    <rect x="130" y="317" width="32" height="8" rx="2" fill="#79747E"/>
+    <rect x="216" y="317" width="32" height="8" rx="2" fill="#79747E"/>
+    <rect x="302" y="317" width="32" height="8" rx="2" fill="#79747E"/>
+    <rect x="388" y="317" width="32" height="8" rx="2" fill="#79747E"/>
+
+    <!-- ── Plane — two-tone: purple body + pale lavender details ── -->
+    <g id="plane" transform="rotate(-15, 200, 230)">
+      
+      <!-- SECONDARY (#EADDFF) — engine -->
+      <g fill="#EADDFF">
+        <!-- Engine nacelle 1 — outer -->
+        <rect x="208" y="257" width="70" height="20" rx="10"/>
+      </g>
+      
+      <!-- PRIMARY (#6750A4) — main airframe structure -->
+      <g fill="#6750A4">
+        <!-- Horizontal stabiliser -->
+        <polygon points="88,247 126,242 122,259 85,263"/>
+        <!-- Far (upper) wing -->
+        <polygon points="172,221 216,215 274,271 248,277"/>
+        <!-- Main near wing -->
+        <polygon points="168,251 226,238 296,316 262,327"/>
+        <!-- Engine pylons — thin struts from wing underside to nacelles -->
+        <rect x="178" y="251" width="7" height="10" rx="2"/>
+        <rect x="226" y="251" width="7" height="12" rx="2"/>
+        <!-- Vertical tail fin -->
+        <polygon points="78,209 118,209 110,162 82,186"/>
+        <!-- Fuselage -->
+        <path d="M 78,230
+                 C 78,212 110,208 142,208
+                 L 306,208
+                 C 328,208 350,218 350,230
+                 C 350,242 328,252 306,252
+                 L 142,252
+                 C 110,252 78,248 78,230 Z"/>
+      </g>
+
+      <!-- SECONDARY (#EADDFF) — engine, winglet -->
+      <g fill="#EADDFF">
+        <!-- Engine nacelle 2 — inner -->
+        <rect x="160" y="253" width="50" height="16" rx="8"/>
+        <!-- Winglet cap -->
+        <polygon points="296,316 264,304 262,327"/>
+      </g>
+
+    </g>
+
+    <!-- ── Constellation (topology from iteration-3, scaled to icon area) ── -->
+    <!-- Nodes: A(215,80) B(306,66) C(386,95) D(351,154) E(260,140) -->
+
+    <!-- Dim mesh lines -->
+    <g stroke="#49454F" stroke-width="1.5" fill="none">
+      <line x1="215" y1="80"  x2="306" y2="66"/>
+      <line x1="306" y1="66"  x2="386" y2="95"/>
+      <line x1="386" y1="95"  x2="351" y2="154"/>
+      <line x1="351" y1="154" x2="260" y2="140"/>
+      <line x1="260" y1="140" x2="215" y2="80"/>
+      <line x1="306" y1="66"  x2="351" y2="154"/>
+    </g>
+
+    <!-- Highlighted route A → B → D -->
+    <line x1="215" y1="80"  x2="306" y2="66"
+          stroke="#EADDFF" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="306" y1="66"  x2="351" y2="154"
+          stroke="#EADDFF" stroke-width="3.5" stroke-linecap="round"/>
+
+    <!-- Arrowhead at D(351,154), dir B(306,66)→D(351,154)
+         dx=45 dy=88 len≈98.8  unit=(0.455,0.891)  perp=(0.891,−0.455)
+         back=(345.5,140.7)  L=(338,144)  R=(353,137) -->
+    <polygon points="351,154 338,144 353,137" fill="#EADDFF"/>
+
+    <!-- Nodes -->
+    <circle cx="215" cy="80"  r="8"  fill="#EADDFF"/>
+    <circle cx="306" cy="66"  r="11" fill="#EADDFF"/>
+    <circle cx="386" cy="95"  r="7"  fill="#EADDFF"/>
+    <circle cx="351" cy="154" r="9"  fill="#EADDFF"/>
+    <circle cx="260" cy="140" r="6"  fill="#EADDFF"/>
+
+  </g>
+
+  <g id="wordmark">
+
+    <!-- PISTA — white, heavy weight -->
+    <text
+      x="490" y="210"
+      font-family="Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="130"
+      font-weight="900"
+      fill="#FFFFFF"
+    >PISTA</text>
+
+    <!-- Purple accent line beneath wordmark -->
+    <line x1="490" y1="228" x2="880" y2="228" stroke="#6750A4" stroke-width="3"/>
+
+    <!-- Tagline — pale lavender -->
+    <text
+      x="490" y="258"
+      font-family="Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif"
+      font-size="19"
+      font-weight="400"
+      fill="#EADDFF"
+      letter-spacing="1"
+    >Passenger Itinerary Search &amp; Ticketing Algorithm</text>
+
+  </g>
+
+</svg>

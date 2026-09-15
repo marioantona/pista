@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PISTA – Reset Password</title>
+
+    <!-- Fonts & Material You -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+    </script>
+
+    <script type="module">
+        import '@material/web/all.js';
+        import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+        document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+    </script>
+    <script src="theme.js"></script>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Roboto, sans-serif;
+            overflow: hidden;
+            background: black;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 1000;
+        }
+
+        .back-button md-filled-tonal-button {
+            height: 45px;
+            /* Frosted Glass Look */
+            --md-filled-tonal-button-container-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+
+            /* Lock all text/icon states to white to prevent black flash*/
+            --md-filled-tonal-button-label-text-color: #ffffff; 
+            --md-filled-tonal-button-icon-color: #ffffff; 
+            --md-filled-tonal-button-hover-label-text-color: #ffffff;
+            --md-filled-tonal-button-hover-icon-color: #ffffff;
+            --md-filled-tonal-button-pressed-label-text-color: #ffffff;
+            --md-filled-tonal-button-pressed-icon-color: #ffffff;
+            --md-filled-tonal-button-focus-label-text-color: #ffffff;
+            --md-filled-tonal-button-focus-icon-color: #ffffff;
+
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .earth-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background: url("./pictures/earth.jpg") center / cover no-repeat;
+        }
+
+        .auth-card {
+            z-index: 2;
+            background: rgba(20, 16, 30, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: clamp(24px, 5vw, 48px);
+            width: 100%;
+            max-width: 440px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin: 0;
+            color: white;
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form md-filled-text-field {
+            width: 100%;
+        }
+
+        .form-actions md-filled-button {
+            width: 100%;
+            height: 52px;
+        }
+
+        .message {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #FF5449;
+            background: rgba(255,84,73,0.12);
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            background: rgba(76,175,80,0.12);
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+
+        .success-message.visible {
+            display: block;
+        }
+    </style>
+    <script src="i18n.js" defer></script>
+</head>
+
+<body>
+    <div class="earth-bg"></div>
+
+    <div class="back-button">
+        <md-filled-tonal-button onclick="history.back()" data-i18n="nav-back">
+            <md-icon slot="icon">arrow_back</md-icon>
+            Back
+        </md-filled-tonal-button>
+    </div>
+
+    <div class="container">
+        <div class="auth-card">
+
+            <div class="logo">
+                <img src="pictures/logos/simplified-h-dark.svg" alt="PISTA" style="height: 48px; width: auto; max-width: 280px; object-fit: contain; margin-bottom: 8px;" />
+            </div>
+
+            <form class="form" method="POST" action="forgot_password.php">
+
+                <div class="message" data-i18n="reset-msg">
+                    Enter your email
+                </div>
+
+                <p class="error-message" id="error-msg"></p>
+                <p class="success-message" id="success-msg"></p>
+
+                <md-filled-text-field
+                    id="email"
+                    name="email"
+                    label="Email"
+                    type="email"
+                    required
+                    data-i18n="email-label">
+                    <md-icon slot="leading-icon">lock</md-icon>
+                </md-filled-text-field>
+
+
+                <div class="form-actions">
+                    <md-filled-button type="submit" data-i18n="btn-next">
+                        Next
+                    </md-filled-button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+    document.querySelector(".form").addEventListener("submit", async (e) => {
+        e.preventDefault() // Stop the traditional form submission
+
+        const form = e.target
+        const formData = new FormData(form)
+        const submitBtn = form.querySelector("md-filled-button")
+        const errorMsg = document.getElementById("error-msg")
+        const successMsg = document.getElementById("success-msg")
+
+        //Reset UI state
+        submitBtn.disabled = true
+        errorMsg.classList.remove("visible")
+        successMsg.classList.remove("visible")
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                successMsg.textContent = data.message
+                successMsg.classList.add("visible")
+                form.reset() // Clear the email field
+            } else {
+                errorMsg.textContent = data.message
+                errorMsg.classList.add("visible")
+            }
+        } catch (error) {
+            console.error("Error:", error)
+            errorMsg.textContent = "A network error occured. Please try again."
+            errorMsg.classList.add("visible")
+        } finally {
+            submitBtn.disabled = false
+        }
+    })
+    </script>
+  
+</body>
+</html>

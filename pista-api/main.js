@@ -1,0 +1,573 @@
+const { fetchExploreDestinations, fetchReturnFlight, fetchBatchFlights } = require('./api')
+const airportDatabase = require('./airports.json')
+
+function deg2rad(deg) {
+    return deg * (Math.PI / 180)
+}
+
+function getDistanceInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371
+    const dLat = deg2rad(lat2 - lat1)
+    const dLon = deg2rad(lon2 - lon1)
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+}
+
+function getAirportData(iataCode) {
+    return airportDatabase[iataCode] || null
+}
+
+
+// --- Helper Date Function ---
+function addDaysToDate(dateString, days) {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+}
+
+// Maps travel regions to up to 7 major aviation hubs for batch routing
+const regionHubs = {
+    "any": "any",
+    "mediterranean": ["BCN", "FCO", "ATH", "MLA", "IST", "PMI", "AGP"],
+    "western_europe": ["CDG", "AMS", "FRA", "BRU", "ZRH", "GVA", "DUB"],
+    "eastern_europe": ["WAW", "PRG", "BUD", "OTP", "SOF", "KRK", "EVN"],
+    "northern_europe": ["ARN", "CPH", "OSL", "HEL", "KEF", "BGO", "GOT"],
+    "southern_europe": ["MAD", "MXP", "LIS", "ATH", "NAP", "OPO", "VCE"],
+    "central_europe": ["FRA", "MUC", "VIE", "PRG", "ZRH", "BER", "WAW"],
+    "balkans": ["BEG", "ATH", "OTP", "SOF", "ZAG", "SJJ", "TGD"],
+    "baltics": ["RIX", "VNO", "TLL", "KUN", "PLQ", "TAY", "EPU"],
+    "british_isles": ["LHR", "DUB", "EDI", "MAN", "GLA", "BFS", "BRS"],
+    "north_america": ["JFK", "LAX", "YYZ", "MEX", "ORD", "ATL", "YVR"],
+    "central_america": ["PTY", "SJO", "SAL", "GUA", "BZE", "LIR", "MGA"],
+    "caribbean": ["PUJ", "SJU", "CUN", "MBJ", "BGI", "NAS", "SDQ"],
+    "south_america": ["GRU", "BOG", "SCL", "EZE", "LIM", "GIG"],
+    "southeast_asia": ["BKK", "SIN", "CGK", "KUL", "SGN", "MNL", "HAN"],
+    "east_asia": ["HND", "ICN", "PEK", "HKG", "TPE", "PVG", "KIX"],
+    "south_asia": ["DEL", "BOM", "MLE", "CMB", "KTM", "DAC", "ISB"],
+    "central_asia": ["ALA", "TAS", "FRU", "DYU", "ASB", "NQZ", "TSE"],
+    "middle_east": ["DXB", "DOH", "JED", "AMM", "TLV", "AUH", "MCT"],
+    "north_africa": ["CMN", "CAI", "TUN", "ALG", "RAK", "HRG", "RBA"],
+    "east_africa": ["NBO", "ADD", "DAR", "EBB", "KGL", "ZNZ", "SEZ"],
+    "southern_africa": ["JNB", "CPT", "MRU", "WDH", "LAD", "MPM", "HRE"],
+    "west_africa": ["LOS", "ACC", "DKR", "ABJ", "FNA", "BJM", "OUA"],
+    "central_africa": ["FIH", "DLA", "LBV", "SSG", "BGF", "BZV", "PNR"],
+    "oceania": ["SYD", "MEL", "AKL", "BNE", "PER", "ADL", "CHC"],
+    "polynesia_pacific": ["NAN", "PPT", "GUM", "NOU", "APW", "TBU", "HNL"]
+}
+
+// region map acts as a fence once we are in the area
+const regionMap = {
+    "mediterranean": ["Spain", "France", "Italy", "Greece", "Malta", "Croatia", "Cyprus", "Turkey", "Monaco", "Albania", "Montenegro", "Bosnia and Herzegovina", "Slovenia", "Lebanon", "Egypt", "Tunisia", "Algeria", "Morocco"],
+    "western_europe": ["United Kingdom", "Ireland", "France", "Netherlands", "Belgium", "Luxembourg", "Germany", "Switzerland", "Austria"],
+    "eastern_europe": ["Poland", "Czechia", "Slovakia", "Hungary", "Romania", "Bulgaria", "Moldova", "Ukraine", "Belarus", "Estonia", "Latvia", "Lithuania"],
+    "northern_europe": ["Sweden", "Norway", "Denmark", "Finland", "Iceland", "Greenland", "Faroe Islands"],
+    "southern_europe": ["Portugal", "Spain", "Italy", "Greece", "Malta", "San Marino", "Andorra", "North Macedonia", "Serbia"],
+    "central_europe": ["Germany", "Poland", "Czechia", "Slovakia", "Hungary", "Austria", "Switzerland", "Liechtenstein"],
+    "balkans": ["Croatia", "Bosnia and Herzegovina", "Serbia", "Montenegro", "Kosovo", "Albania", "North Macedonia", "Bulgaria", "Romania", "Greece"],
+    "baltics": ["Estonia", "Latvia", "Lithuania"],
+    "british_isles": ["United Kingdom", "Ireland", "Isle of Man", "Guernsey", "Jersey"],
+    "north_america": ["United States", "Canada", "Mexico", "Greenland", "Bermuda"],
+    "central_america": ["Belize", "Costa Rica", "El Salvador", "Guatemala", "Honduras", "Nicaragua", "Panama"],
+    "caribbean": ["Cuba", "Dominican Republic", "Jamaica", "Bahamas", "Puerto Rico", "Haiti", "Barbados", "Trinidad and Tobago", "Cayman Islands", "Aruba"],
+    "south_america": ["Brazil", "Argentina", "Chile", "Colombia", "Peru", "Ecuador", "Venezuela", "Uruguay", "Paraguay", "Bolivia", "Guyana", "Suriname"],
+    "southeast_asia": ["Thailand", "Vietnam", "Malaysia", "Indonesia", "Philippines", "Singapore", "Cambodia", "Laos", "Myanmar", "Brunei"],
+    "east_asia": ["Japan", "South Korea", "China", "Taiwan", "Hong Kong", "Macau", "Mongolia", "North Korea"],
+    "south_asia": ["India", "Pakistan", "Bangladesh", "Sri Lanka", "Nepal", "Maldives", "Bhutan", "Afghanistan"],
+    "central_asia": ["Kazakhstan", "Uzbekistan", "Kyrgyzstan", "Tajikistan", "Turkmenistan"],
+    "middle_east": ["United Arab Emirates", "Saudi Arabia", "Qatar", "Oman", "Kuwait", "Bahrain", "Israel", "Jordan", "Lebanon", "Turkey", "Egypt", "Iran", "Iraq", "Syria", "Yemen"],
+    "north_africa": ["Morocco", "Algeria", "Tunisia", "Libya", "Egypt", "Sudan"],
+    "east_africa": ["Kenya", "Tanzania", "Uganda", "Rwanda", "Burundi", "Ethiopia", "Somalia", "Djibouti", "Eritrea", "Madagascar", "Mauritius", "Seychelles"],
+    "southern_africa": ["South Africa", "Namibia", "Botswana", "Zimbabwe", "Mozambique", "Zambia", "Malawi", "Lesotho", "Eswatini", "Angola"],
+    "west_africa": ["Nigeria", "Ghana", "Cote d'Ivoire", "Senegal", "Mali", "Burkina Faso", "Guinea", "Liberia", "Sierra Leone", "Togo", "Benin", "Gambia", "Cape Verde"],
+    "central_africa": ["Democratic Republic of the Congo", "Cameroon", "Central African Republic", "Chad", "Republic of the Congo", "Gabon", "Equatorial Guinea", "Sao Tome and Principe"],
+    "oceania": ["Australia", "New Zealand", "Papua New Guinea", "Fiji", "Vanuatu", "Solomon Islands", "Samoa", "Tonga"],
+    "polynesia_pacific": ["French Polynesia", "Fiji", "Samoa", "Tonga", "Vanuatu", "New Caledonia", "Guam", "Micronesia"]
+}
+
+// --- Core Beam Search Algorithm ---
+
+async function generateMultiCityItineraries(origin, startDate, numDestinations, daysPerLeg, avoidCountries = [], includeDestinations = [], avoidOriginCountry = false, region = 'uk', currency = 'GBP', adults = 1, children = 0, travelRegion = "any", defaultBeamWidth = 3) {
+    
+    const originData = getAirportData(origin)
+    if (!originData) throw new Error(`Origin airport ${origin} not found in database.`)
+    
+    if (avoidOriginCountry) {
+        avoidCountries.push(originData.country)
+    }
+    
+    const MIN_DISTANCE_KM = 100
+
+    //API CALL PREDICTOR & BEAM THROTTLE
+    const maxBudget = 20
+    const reservedForReturn = 6
+    const d = includeDestinations.length
+
+    const callsHopZero = 1 + d
+    const remainingBudget = maxBudget - reservedForReturn - callsHopZero
+
+    let maxSafeBeam = defaultBeamWidth
+
+    if (numDestinations > 1) {
+        const callsPerBeamItem = 1 + d
+        const subsequentHops = numDestinations - 1
+
+        maxSafeBeam = Math.floor(remainingBudget / (subsequentHops * callsPerBeamItem))
+    }
+
+    const beamWidth = Math.max(1, Math.min(defaultBeamWidth, maxSafeBeam))
+
+    console.log(`[PREDICTOR] Target Dests ${numDestinations} | Mandatory: ${d}`)
+    console.log(`[PREDICTOR] Dynamic Beam Width set to: ${beamWidth}`)
+
+
+    // Initialize the beam with our starting point
+    let beam = [{
+        path: [origin],
+        dates: [],
+        totalCost: 0,
+        flights: []
+    }];
+
+    // Step 1 to N: Loop through each required destination hop
+    for (let hop = 0; hop < numDestinations; hop++) {
+        const currentDate = addDaysToDate(startDate, hop * daysPerLeg)
+
+        // 🚀 OPTIMIZATION: Process all itineraries in the beam AT THE SAME TIME
+        const hopPromises = beam.map(async (itinerary) => {
+            const currentAirport = itinerary.path[itinerary.path.length - 1]
+            const unvisitedMandatory = includeDestinations.filter(dest => !itinerary.path.includes(dest))
+            const hopsRemaining = numDestinations - hop
+            const mustVisitMandatory = unvisitedMandatory.length >= hopsRemaining
+
+            let localCandidates = []
+
+            if (mustVisitMandatory) {
+                // 🛑 PANIC MODE: Only use api2 to fly directly to a mandatory destination
+                const panicPromises = unvisitedMandatory.map(async (targetDest) => {
+                    try {
+                        console.log(`[FORCED HOP] Checking specific route: ${currentAirport} -> ${targetDest}`);
+                        const specificFlight = await fetchReturnFlight(currentAirport, targetDest, currentDate, region, currency, adults, children);
+                        return {
+                            path: [...itinerary.path, targetDest],
+                            dates: [...itinerary.dates, currentDate],
+                            totalCost: itinerary.totalCost + specificFlight.price,
+                            flights: [...itinerary.flights, {
+                                from: currentAirport,
+                                to: targetDest,
+                                price: specificFlight.price,
+                                airline: specificFlight.airline,
+                                airline_logo: specificFlight.airline_logo
+                            }]
+                        };
+                    } catch (error) {
+                        console.log(`⚠️ Warning: Forced flight ${currentAirport} -> ${targetDest} failed.`);
+                        return null; // Return null if flight fails
+                    }
+                });
+                
+                // Wait for all panic routes to finish
+                const panicResults = await Promise.all(panicPromises);
+                localCandidates.push(...panicResults.filter(r => r !== null));
+
+            } else {
+                // 🟢 FLOATING LOGIC: Explore AND check mandatory destinations simultaneously!
+                
+                // Part A: Explore Branch (Wrapped in a promise)
+                const explorePromise = (async () => {
+                    try {
+                        // 🚀 ONLY USE Hub Bypass on Hop 0 to get them into the region!
+                        if (hop === 0 && travelRegion !== "any" && regionHubs[travelRegion]) {
+
+                            console.log(`[ENTRY HUB BYPASS] Batch checking up to 7 hubs for ${travelRegion}`)
+
+                            // Filter out already visited or avoided hubs
+                            const validHubs = regionHubs[travelRegion].filter(hubIata => {
+                                if (itinerary.path.includes(hubIata)) return false
+                                const hubData = getAirportData(hubIata)
+                                if (hubData && avoidCountries.includes(hubData.country)) return false
+                                return true
+                            }).slice(0, 7) // hard cap of 7 for API
+
+                            if (validHubs.length === 0) return []
+
+                            const hubsStr = validHubs.join(",")
+                            const batchFlights = await fetchBatchFlights(currentAirport, hubsStr, currentDate, region, currency, adults, children)
+
+                            let hubResults = []
+                            const bestPerHub = {}
+
+                            // Group by destination to find the cheapest flight to each specific hub
+                            batchFlights.forEach(flight => {
+                                if (!bestPerHub[flight.to] || flight.price < bestPerHub[flight.to].price) {
+                                    bestPerHub[flight.to] = flight
+                                }
+                            })
+
+                            // COMPROMISE - BEAM REPAIR LOGIC
+                            const foundHubs = Object.keys(bestPerHub)
+                            if (foundHubs.length < beamWidth) {
+                                // Find which hubs we asked for, but Google ignored
+                                const missingHubs = validHubs.filter(hub => !foundHubs.includes(hub))
+
+                                // Only fetch enough to fulfill the beam width
+                                const hubsToFetch = missingHubs.slice(0, beamWidth - foundHubs.length)
+
+                                if (hubsToFetch.length > 0) {
+                                    console.log(`[BEAM REPAIR] Batch starved. Fetching ${hubsToFetch.length} missing hubs individually`)
+
+                                    const repairPromises = hubsToFetch.map(async (hub) => {
+                                        try {
+                                            const flight = await fetchReturnFlight(currentAirport, hub, currentDate, region, currency, adults, children)
+                                            bestPerHub[hub] = {
+                                                from: currentAirport,
+                                                to: hub,
+                                                price: flight.price,
+                                                airline: flight.airline,
+                                                airline_logo: flight.airline_logo
+                                            }
+                                        } catch (e) {
+                                            // Ignore failures, route might genuinely not exist
+                                        }
+                                    })
+                                    await Promise.all(repairPromises)
+                                }
+                            }
+                            
+                            // build resulting branches from repaired list
+                            for (const hub in bestPerHub) {
+                                const flight = bestPerHub[hub]
+                                hubResults.push({
+                                    path: [...itinerary.path, hub],
+                                    dates: [...itinerary.dates, currentDate],
+                                    totalCost: itinerary.totalCost + flight.price,
+                                    flights: [...itinerary.flights, {
+                                        from: currentAirport,
+                                        to: hub,
+                                        price: flight.price,
+                                        airline: flight.airline,
+                                        airline_logo: flight.airline_logo
+                                    }]
+                                })
+                            }
+                            return hubResults
+                        } else {
+                            // 🟢 INTRA-REGION / ANYWHERE EXPLORE LOGIC
+                            const destinations = await fetchExploreDestinations(currentAirport, currentDate, region, currency, adults, children);
+
+                            let validDestinations = [];
+                            const allowedCountries = regionMap[travelRegion] || null
+                            
+                            for (const dest of destinations) {
+                                if (!dest.destination_airport || !dest.destination_airport.code || !dest.flight_price) continue;
+                                if (avoidCountries.includes(dest.country)) continue;
+                                if (itinerary.path.includes(dest.destination_airport.code)) continue;
+
+                                // 🛑 FENCE: If they selected a region, don't let them fly out of it!
+                                if (travelRegion !== "any" && allowedCountries && !allowedCountries.includes(dest.country)) {
+                                    continue
+                                }
+
+                                if (dest.gps_coordinates) {
+                                    const distToOrigin = getDistanceInKm(originData.lat, originData.lon, 
+                                        dest.gps_coordinates.latitude, dest.gps_coordinates.longitude)
+                                    
+                                    if (distToOrigin < MIN_DISTANCE_KM) {
+                                        console.log(`[FILTERED] Skipping ${dest.destination_airport.code} - Too close to origin`)
+                                        continue;
+                                    }
+                                }
+
+                                validDestinations.push({
+                                    path: [...itinerary.path, dest.destination_airport.code],
+                                    dates: [...itinerary.dates, currentDate],
+                                    totalCost: itinerary.totalCost + dest.flight_price,
+                                    flights: [...itinerary.flights, {
+                                        from: currentAirport,
+                                        to: dest.destination_airport.code,
+                                        price: dest.flight_price,
+                                        airline: dest.airline,
+                                        // Construct logo URL using airline code if logo is missing
+                                        airline_logo: dest.airline_logo || (dest.airline_code ? `https://www.gstatic.com/flights/airline_logos/70px/${dest.airline_code}.png` : "")
+                                    }]
+                                });
+                            }
+                            return validDestinations;
+                        }
+                    } catch (error) {
+                        console.error(`[EXPLORE API ERROR] SerpAPI failed: ${error.message}`)
+                        return [];
+                    }
+                })();
+
+                // Part B: Specific Mandatory Branches
+                const specificPromises = unvisitedMandatory.map(async (targetDest) => {
+                    try {
+                        console.log(`[FLOATING CHECK] Checking price for early jump to: ${targetDest}`);
+                        const specificFlight = await fetchReturnFlight(currentAirport, targetDest, currentDate, region, currency, adults, children);
+                        return {
+                            path: [...itinerary.path, targetDest],
+                            dates: [...itinerary.dates, currentDate],
+                            totalCost: itinerary.totalCost + specificFlight.price,
+                            flights: [...itinerary.flights, {
+                                from: currentAirport,
+                                to: targetDest,
+                                price: specificFlight.price,
+                                airline: specificFlight.airline,
+                                airline_logo: specificFlight.airline_logo
+                            }]
+                        };
+                    } catch (error) { return null; }
+                });
+
+                // 🚀 Wait for BOTH the Explore API and the Specific APIs to finish simultaneously!
+                const [exploreResults, ...specificResults] = await Promise.all([explorePromise, ...specificPromises]);
+                
+                localCandidates.push(...exploreResults);
+                localCandidates.push(...specificResults.filter(r => r !== null));
+            }
+
+            return localCandidates
+        })
+
+        // Resolve all branch expansions for this hop at once
+        const allCandidatesNested = await Promise.all(hopPromises);
+        let nextCandidates = allCandidatesNested.flat(); // Flatten the arrays into one big pool
+
+        if (nextCandidates.length === 0) {
+            throw new Error("No valid routes found to continue the itinerary. Constraints may be too strict.");
+        }
+
+        // --- 🌟 STRATIFIED BEAM PRUNING 🌟 ---
+        
+        // Step 1: Calculate constraint progress for every candidate
+        nextCandidates.forEach(candidate => {
+            candidate.fulfilledCount = includeDestinations.filter(dest => candidate.path.includes(dest)).length;
+        });
+
+        // Step 2: Sort purely by cost first
+        nextCandidates.sort((a, b) => a.totalCost - b.totalCost);
+
+        let newBeam = [];
+        let addedPaths = new Set(); // To ensure we don't accidentally add the exact same route twice
+        
+        //expand beam on the final hop so we have backup candidates for the return flight
+        const targetBeamSize = (hop === numDestinations - 1) ? beamWidth + 3 : beamWidth
+
+        // Slot 1 & 2: Take the absolute cheapest routes available
+        const numCheapestSlots = Math.max(1, targetBeamSize - 1); 
+        for (let i = 0; i < nextCandidates.length && newBeam.length < numCheapestSlots; i++) {
+            newBeam.push(nextCandidates[i]);
+            addedPaths.add(nextCandidates[i].path.join(','));
+        }
+
+        // Slot 3 (The Constraint Survivor): Find the cheapest remaining route with the HIGHEST fulfilled constraints
+        if (newBeam.length < targetBeamSize && includeDestinations.length > 0) {
+            let remaining = nextCandidates.filter(c => !addedPaths.has(c.path.join(',')));
+            
+            if (remaining.length > 0) {
+                // Sort remaining primarily by fulfilled constraints (descending), then by cost (ascending)
+                remaining.sort((a, b) => {
+                    if (b.fulfilledCount !== a.fulfilledCount) {
+                        return b.fulfilledCount - a.fulfilledCount;
+                    }
+                    return a.totalCost - b.totalCost;
+                });
+                
+                newBeam.push(remaining[0]);
+                addedPaths.add(remaining[0].path.join(','));
+            }
+        }
+
+        // If the beam still isn't full (e.g., no includes needed), fill it with whatever cheapest routes are left
+        let remaining = nextCandidates.filter(c => !addedPaths.has(c.path.join(',')));
+        while (newBeam.length < targetBeamSize && remaining.length > 0) {
+            newBeam.push(remaining.shift());
+        }
+
+        beam = newBeam;
+    }
+
+    // Final Step: Calculate the return leg back to the origin
+    // 🚀 BATCH OPTIMIZATION: 1 API Call for ALL return legs!
+
+    const finalDate = addDaysToDate(startDate, numDestinations * daysPerLeg)
+    let completedItineraries = []
+    /*
+    let apiCallsMade = 0
+    const MAX_API_CALLS = 6
+
+    //split beam -> try top 3 (beamWidth) simultaneously first
+    const initialBatch = beam.slice(0, beamWidth)
+    const backupBatch = beam.slice(beamWidth)
+    */
+
+    // Gather all unique last airports from current beam (Max 7)
+    const lastAirports = beam.map(itin => itin.path[itin.path.length - 1])
+    const uniqueLastAirports = [...new Set(lastAirports)].slice(0, 7)
+
+    if (uniqueLastAirports.length > 0) {
+        const originsStr = uniqueLastAirports.join(",")
+        console.log(`[FINAL RETURN] Batch fetching returns from [${originsStr}] to ${origin}`)
+
+        try {
+            const returnFlights = await fetchBatchFlights(originsStr, origin, finalDate, region, currency, adults, children);
+            
+            // Map the absolute best flight per origin airport
+            const bestReturnPerOrigin = {}
+            returnFlights.forEach(flight => {
+                if (!bestReturnPerOrigin[flight.from] || flight.price < bestReturnPerOrigin[flight.from].price) {
+                    bestReturnPerOrigin[flight.from] = flight
+                }
+            })
+
+            // Compromise: BEAM repair logic
+            const foundReturns = Object.keys(bestReturnPerOrigin)
+            if (foundReturns.length < beamWidth) {
+                const missingReturns = uniqueLastAirports.filter(apt => !foundReturns.includes(apt))
+                const needed = Math.max(0, beamWidth - foundReturns.length)
+                const returnsToFetch = missingReturns.slice(0, needed)
+
+                if (returnsToFetch.length > 0) {
+                    console.log(`[FINAL RETURN REPAIR] Batch starved. Fetching ${returnsToFetch.length} missing returns individually...`)
+
+                    const repairPromises = returnsToFetch.map(async (apt) => {
+                        try {
+                            const flight = await fetchReturnFlight(apt, origin, finalDate, region, currency, adults, children)
+                            bestReturnPerOrigin[apt] = {
+                                from: apt,
+                                to: origin,
+                                price: flight.price,
+                                airline: flight.airline,
+                                airline_logo: flight.airline_logo
+                            }
+                        } catch(e) {
+                            // Ignore
+                        }
+                    })
+                    await Promise.all(repairPromises)
+                }
+            }
+
+            // Re-attach successful return flights to their parent itineraries in the beam
+            beam.forEach(itinerary => {
+                const lastAirport = itinerary.path[itinerary.path.length - 1]
+                const returnFlight = bestReturnPerOrigin[lastAirport]
+                if (returnFlight) {
+                    completedItineraries.push({
+                        ...itinerary,
+                        path: [...itinerary.path, origin],
+                        dates: [...itinerary.dates, finalDate],
+                        totalCost: itinerary.totalCost + returnFlight.price,
+                        flights: [...itinerary.flights, {
+                            from: lastAirport,
+                            to: origin,
+                            price: returnFlight.price,
+                            airline: returnFlight.airline,
+                            airline_logo: returnFlight.airline_logo
+                        }],
+                        fulfilledCount: undefined
+                    })
+                }
+            })
+        } catch (e) {
+            console.error(`[FINAL RETURN ERROR] ${e.message}`)
+        }
+        // Final sort to guarantee the absolute cheapest completed itinerary is at the top
+        completedItineraries.sort((a,b) => a.totalCost - b.totalCost)
+
+        return completedItineraries
+
+    }
+
+    /*
+    const initialPromises = initialBatch.map(async (itinerary) => {
+        apiCallsMade++;
+        const lastAirport = itinerary.path[itinerary.path.length - 1];
+        try {
+            // 🚨 API CALL 🚨
+            const returnFlight = await fetchReturnFlight(lastAirport, origin, finalDate, region, currency, adults, children);
+        
+            return {
+                ...itinerary,
+                path: [...itinerary.path, origin],
+                dates: [...itinerary.dates, finalDate],
+                totalCost: itinerary.totalCost + returnFlight.price,
+                flights: [...itinerary.flights, {
+                    from: lastAirport,
+                    to: origin,
+                    price: returnFlight.price,
+                    airline: returnFlight.airline,
+                    airline_logo: returnFlight.airline_logo
+                }],
+                // Clean up the temporary tracker before showing to user
+                fulfilledCount: undefined 
+            };
+        } catch (error) {
+            console.log(`⚠️ Warning: Primary return flight failed from ${lastAirport}. Skipping this path.`)
+            return null
+        }
+    })
+
+    const initialResults = await Promise.all(initialPromises)
+
+    // Filter out any paths that failed to find a return flight (the nulls)
+    completedItineraries.push(...initialResults.filter(r => r !== null))
+
+    //fallback loop - if we lost some routes, try backups one by one until we have 3 or hit API limit
+    let backupIndex = 0
+    while (completedItineraries.length < beamWidth && apiCallsMade < MAX_API_CALLS && backupIndex < backupBatch.length) {
+        const itinerary = backupBatch[backupIndex]
+        const lastAirport = itinerary.path[itinerary.path.length - 1]
+        backupIndex++
+        apiCallsMade++
+
+        console.log(`[FALLBACK API CALL] Attempting backup route from ${lastAirport} to recover lost options...`)
+
+        try {
+            const returnFlight = await fetchReturnFlight(lastAirport, origin, finalDate, region, currency, adults, children)
+            completedItineraries.push({
+                ...itinerary,
+                path: [...itinerary.path, origin],
+                dates: [...itinerary.dates, finalDate],
+                totalCost: itinerary.totalCost + returnFlight.price,
+                flights: [...itinerary.flights, {
+                    from: lastAirport,
+                    to: origin,
+                    price: returnFlight.price,
+                    airline: returnFlight.airline,
+                    airline_logo: returnFlight.airline_logo
+                }],
+                fulfilledCount: undefined
+            })
+        } catch (error) {
+            console.log(`Warning: Fallback return flight failed from ${lastAirport}.`)
+        }
+    }
+
+    // Final sort to guarantee the absolute cheapest completed itinerary is at the top
+    completedItineraries.sort((a, b) => a.totalCost - b.totalCost);
+
+    return completedItineraries;
+    */
+}
+
+// --- EXECUTION TEST ---
+// Origin: STN, 2026-04-20, 3 Destinations, 4 Days/Leg, Avoid: Spain, Include: ['BER'] (Berlin)
+
+/*
+generateMultiCityItineraries('BCN', '2026-04-17', 3, 4, [], ['FCO'])
+    .then((itineraries) => {
+        console.log("\n🎉 Success! Here are the top itineraries:")
+        console.dir(itineraries, {depth:null, colors: true})
+    })
+    .catch((error) => {
+        console.error("\n❌ An error occurred during the search:")
+        console.error(error.message)
+    })
+
+*/
+
+module.exports = {
+    generateMultiCityItineraries
+}

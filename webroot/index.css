@@ -1,0 +1,582 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+:root {
+    /* Material You Color Palette*/
+    /* Primary */
+    --md-sys-color-primary: #6750A4;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #EADDFF;
+    --md-sys-color-on-primary-container: #21005D;
+
+    /* Secondary */
+    --md-sys-color-secondary: #625B71;
+    --md-sys-color-on-secondary: #FFFFFF;
+
+    /* Surface */
+    --md-sys-color-surface: #FEF7FF;
+    --md-sys-color-on-surface: #1D1B20;
+    --md-sys-color-surface-variant: #E7E0EB;
+    --md-sys-color-on-surface-variant: #49454F;
+
+    /* Outline */
+    --md-sys-color-outline: #79747E;
+}
+
+
+/* DARK THEME TOKEN OVERRIDES */
+
+[data-theme="dark"] {
+    /* Primary */
+    --md-sys-color-primary: #D0BCFF;
+    --md-sys-color-on-primary: #381E72;
+    --md-sys-color-primary-container: #4F378B;
+    --md-sys-color-on-primary-container: #EADDFF;
+
+    /* Secondary */
+    --md-sys-color-secondary: #CCC2DC;
+    --md-sys-color-on-secondary: #332D41;
+
+    /* Surface */
+    --md-sys-color-surface: #141218;
+    --md-sys-color-on-surface: #E6E1E5;
+    --md-sys-color-surface-variant: #49454F;
+    --md-sys-color-on-surface-variant: #CAC4D0;
+
+    /* Outline */
+    --md-sys-color-outline: #938F99;
+}
+
+/* dark mode: desaturate map tiles so they don't glare on dark UI */
+[data-theme="dark"] .leaflet-tile-container {
+    filter: saturate(0.4) brightness(0.7) contrast(1.1);
+}
+
+/* dark mode: nav-buttons */
+[data-theme="dark"] .circle md-icon {
+    color: #E6E1E5;
+}
+
+[data-theme="dark"] #pista {
+    --md-filled-tonal-button-container-color: rgba(30, 26, 40, 0.85);
+}
+
+[data-theme="dark"] .icontext {
+    fill: #E6E1E5;
+}
+
+[data-theme="dark"] .icontext.inactive svg,
+[data-theme="dark"] .icontext.inactive:hover svg,
+[data-theme="dark"] .icontext.inactive:active svg {
+    fill: #CAC4D0;
+}
+
+/* dark mode: search card & autocomplete dropdown */
+[data-theme="dark"] .card {
+    background-color: #1C1B1F;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .autocomplete-items {
+    background-color: #2B2930;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* dark mode: flight cards in results*/
+[data-theme="dark"] .flight-card {
+    background-color: #1C1B1F;
+    border-color: #49454F;
+}
+
+[data-theme="dark"] .flight-card:hover {
+    background-color: #4F378B;
+    border-color: #D0BCFF;
+}
+
+[data-theme="dark"] .flight-card.selected {
+    background-color: #4F378B;
+    border-color: #D0BCFF;
+}
+
+/* dark mode: auth modal input fields */
+[data-theme="dark"] .auth-card md-filled-text-field {
+    --md-filled-text-field-container-color: #2B2930;
+    --md-filled-text-field-input-text-color: #E6E1E5;
+    --md-filled-text-field-label-text-color: #CAC4D0;
+    --md-filled-text-field-focus-label-text-color: #D0BCFF;
+    --md-filled-text-field-hover-label-text-color: #CAC4D0;
+    --md-filled-text-field-focus-active-indicator-color: #D0BCFF;
+    --md-filled-text-field-active-indicator-color: #938F99;
+    --md-filled-text-field-leading-icon-color: #CAC4D0;
+    --md-filled-text-field-caret-color: #D0BCFF;
+}
+
+/* dark mode: travel region dropdown */
+[data-theme="dark"] md-outlined-select {
+    --md-outlined-select-text-field-input-text-color: #E6E1E5;
+    --md-outlined-select-text-field-label-text-color: #CAC4D0;
+    --md-outlined-select-text-field-outline-color: #938F99;
+    --md-outlined-select-text-field-focus-outline-color: #D0BCFF;
+    --md-outlined-select-text-field-focus-label-text-color: #D0BCFF;
+    --md-outlined-select-text-field-caret-color: #D0BCFF;
+    --md-menu-container-color: #2B2930;
+    --md-list-item-label-text-color: #E6E1E5;
+    --md-list-item-supporting-text-color: #CAC4D0;
+    --md-list-item-selected-container-color: #4F378B;
+    --md-list-item-hover-state-layer-color: #D0BCFF;
+}
+
+/* dark mode: Flights / Itineraries nav buttons */
+[data-theme="dark"] .icontext {
+    --md-filled-button-label-text-color: #E6E1E5;
+    --md-filled-button-hover-label-text-color: #E6E1E5;
+    --md-filled-button-pressed-label-text-color: #E6E1E5;
+    --md-filled-button-focus-label-text-color: #E6E1E5;
+}
+
+[data-theme="dark"] .icontext.inactive {
+    --md-filled-button-container-color: #2B2930;
+    --md-filled-button-label-text-color: #CAC4D0;
+    --md-filled-button-hover-label-text-color: #E6E1E5;
+}
+
+[data-theme="dark"] .icontext.inactive svg,
+[data-theme="dark"] .icontext.inactive:hover svg,
+[data-theme="dark"] .icontext.inactive:active svg {
+    fill: #CAC4D0;
+}
+
+/* dark mode: auth card logo img sizing */
+.auth-card .logo img[data-pista-logo] {
+    height: 48px;
+    width: auto;
+    max-width: 280px;
+    object-fit: contain;
+}
+
+/* dark mode: toggle button */
+.circle[data-theme-toggle] {
+    --md-filled-tonal-button-container-color: #E7E0EB;
+    --md-icon-color: #1D1B20;
+}
+
+[data-theme="dark"] .circle[data-theme-toggle] {
+    --md-filled-tonal-button-container-color: #4F378B;
+    --md-icon-color: #EADDFF;
+}
+
+/* END OF DARK MODE ---- */
+
+/* --- Leaflet Map --- */
+.leaflet-container {
+    height: 400px;
+    width: 600px;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.leaflet-tile-container {
+    filter: saturate(0.98) contrast(0.9);
+}
+
+/* --- Layout Components --- */
+.top-nav {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+}
+
+.top-nav > div {
+    display: flex;
+    gap: 12px;
+}
+
+.card {
+    position: absolute;
+    top: 85px;
+    left: 17px;
+    z-index: 1000;
+    display: flex;
+    width: 345px;
+    border-radius: 25px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    box-shadow: 0 1px 3px 0.1px rgba(0,0,0,0.2);
+}
+
+.vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+
+/* --- Navigation Buttons --- */
+#pista {
+    --md-filled-tonal-button-label-text-color: #333333;
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+    /* width grows to fit logo SVG; height matches circle buttons */
+    height: 56px;
+    min-width: unset;
+    padding: 0 16px;
+}
+
+#pista img[data-pista-logo] {
+    height: 28px;
+    width: auto;
+    display: block;
+}
+
+.icontext {
+    --md-filled-button-icon-size: 26px;
+    height: 56px;
+    min-width: 100px;
+    font-size: 15px;
+    pointer-events: auto;
+    box-shadow: 0 1px 3px 0.1px rgba(0,0,0,0.2);
+    fill: #1f1f1f;
+}
+
+.icontext.inactive {
+    --md-filled-button-container-color: var(--md-sys-color-surface-variant);
+    --md-filled-button-label-text-color: #333333;
+    --md-filled-button-hover-label-text-color: #333333;
+    --md-filled-button-pressed-label-text-color: #333333;
+    --md-filled-button-focus-label-text-color: #333333;
+}
+
+.icontext.inactive svg,
+.icontext.inactive:hover svg,
+.icontext.inactive:active svg {
+    fill: #333333;
+}
+
+.circle {
+    width: 56px;
+    height: 56px;
+    --md-filled-tonal-button-leading-space: 0px;
+    --md-filled-tonal-button-trailing-space: 0px;
+    --md-filled-tonal-button-container-shape: 56px;
+    align-items: center;
+    pointer-events: auto;
+    box-shadow: 0 1px 3px 0.1px rgba(0,0,0,0.2);
+}
+
+.circle svg {
+    display: block;
+    width: 32px;
+    height: 32px;
+}
+
+.data-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 450px;
+    overflow-y: auto;
+    background-color: transparent;
+    border: none;
+}
+
+.data-box::-webkit-scrollbar {
+    display: none;
+}
+
+.flight-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-surface-variant);
+    border-radius: 22px;
+    padding: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.flight-card:hover {
+    background-color: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+.flight-card.selected {
+    background-color: var(--md-sys-color-primary-container);
+    border: 2px solid var(--md-sys-color-primary);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.save-itin-btn {
+    --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+    --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
+}
+
+.airline-logo {
+    width: 48px;
+    height: 48px;
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    margin-right: 13px;
+    flex-shrink: 0;
+}
+
+.flight-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.route {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--md-sys-color-on-surface);
+    letter-spacing: 0.3px;
+}
+
+.details {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    gap: 2px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.details .time {
+    font-weight: 520;
+    color: var(--md-sys-color-on-surface);
+}
+
+.details .date {
+    margin-left: 12px;
+}
+
+.details .price {
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+}
+
+.details .carrier {
+    margin-left: 10px;
+    color: var(--md-sys-color-primary);
+}
+
+/* hide stepper buttons on desktop */
+.stepper-btn {
+    display: none;
+}
+
+/* Advanced Options Accordion */
+.advanced-options-accordion {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.advanced-options-accordion summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--md-sys-typescale-body-large-font, sans-serif);
+    font-size: 14px;
+    color: var(--md-sys-color-primary);
+    padding: 8px 4px;
+    user-select: none;
+    width: fit-content;
+}
+
+/* Hide the native disclosure triangle across browsers */
+.advanced-options-accordion summary::-webkit-details-marker { display: none; }
+.advanced-options-accordion summary::marker { display: none; }
+
+/* Chevron icon — rotates when open */
+.advanced-options-accordion summary::before {
+    content: "expand_more";
+    font-family: "Material Symbols Outlined";
+    font-size: 20px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+    color: var(--md-sys-color-primary);
+}
+
+.advanced-options-accordion[open] summary::before {
+    transform: rotate(180deg);
+}
+
+.advanced-options-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid var(--md-sys-color-surface-variant);
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface);
+    z-index: 9999;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.autocomplete-items.active {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+    border-bottom: 1px solid var(--md-sys-color-surface-variant);
+}
+
+.autocomplete-item:hover {
+    background-color: var(--md-sys-color-primary-container);
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* Auth Modal Overrides */
+.auth-card {
+    background: rgba(20,16,30,0.95);
+    border-radius: 28px;
+    padding: clamp(24px, 5vw, 48px);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    color: white;
+}
+
+.auth-card .logo { text-align: center; margin-bottom: 24px; }
+.auth-card .logo h1 { font-size: 42px; font-weight: 900; margin: 0; letter-spacing: 2px;}
+.auth-card .logo p { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+.auth-card .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.auth-card .tab { flex: 1; --md-filled-tonal-button-label-text-color: white; }
+.auth-card .form { flex-direction: column; gap: 16px; }
+
+.auth-card .form .remember-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2px;
+    gap: 8px;
+}
+
+.auth-card .form .remember-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.auth-card .form .remember-row a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.auth-card md-filled-text-field { width: 100%; }
+.auth-card .divider { display: flex; align-items: center; margin: 16px 0; font-size: 14px; opacity: 0.6; }
+.auth-card .divider::before, .auth-card .divider::after { content: ''; flex: 1; height: 1px; background: white; margin: 0 12px; }
+.auth-card .social-login { display: flex; flex-direction: column; gap: 12px; }
+.auth-card .social-login md-filled-tonal-button { --md-filled-tonal-button-label-text-color: white; height: 48px; }
+.auth-card .error-message { color: #FF5449; background: rgba(255, 84, 73, 0.12); padding: 10px; border-radius: 8px; display: none; text-align: center; font-size: 13px; }
+
+/* mobile responsiveness for Map UI */
+@media (max-width: 768px) {
+    .nav-label {
+        display: none; /* Hide text on nav buttons */
+    }
+
+    /* Shrink the button width and gap between buttons to save space */
+    .icontext {
+        min-width: 56px !important;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .top-nav > div {
+        gap: 6px; /* tighter spacing on mobile */
+    }
+
+    .card {
+        top: auto;
+        bottom: 16px; /* snap to bottom of screen */
+        left: 50%;
+        transform: translateX(-50%); /* centres the card */
+        width: 92%;
+        max-width: none;
+        max-height: 50vh; /* don't let it cover more than half the screen */
+        overflow-y: auto; /* allow scrolling inside the card */
+        box-shadow: 0 1px 3px 0.1px rgba(0,0,0,0.2), inset 0 -15px 15px -15px rgba(0,0,0,0.2);
+    }
+
+    .horizontal {
+        flex-direction: column; /* stack the side-by-side inputs on mobile */
+        align-items: stretch;
+    }
+
+    /* make desired destinations / avoid countries take full width */
+    #returnDesiredDestinations, #returnDate {
+        width: 100% !important;
+    }
+
+    .mobile-row {
+        flex-direction: row !important;
+    }
+
+    .checkbox-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .stepper-btn {
+        display: inline-flex;
+    }
+
+    /* hide native browser up/down arrows on mobile to prevent redundancy */
+    md-outlined-text-field[type="number"] {
+        -moz-appearance: textfield; /* Firefox */
+    }
+
+    md-outlined-text-field[type="number"]::-webkit-inner-spin-button,
+    md-outlined-text-field[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none; /* Chrome/Safari */
+        margin: 0;
+    }
+}
