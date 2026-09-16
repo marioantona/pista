@@ -3,6 +3,7 @@ require_once __DIR__ . '/session.php';
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/configure.php';
+require_once __DIR__ . '/client_ip.php';
 
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
@@ -42,8 +43,9 @@ if (isset($_SESSION['user_id'])) {
 } 
 // GUEST USER LOGIC (IP TRACKING)
 else {
-    //Safely get the real IP
-    $guest_ip = isset($_SERVER['HTTP_CF_CONNECTING_IP']) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : $_SERVER['REMOTE_ADDR'];
+    // The real client IP, as validated by mod_remoteip rather than asserted by the
+    // caller. See client_ip.php for why reading CF-Connecting-IP here would undo it.
+    $guest_ip = pista_client_ip();
     $max_guest_credits = 2; // Limit guests to exactly 1 free search
 
     //Check if this IP has searched before
