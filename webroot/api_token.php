@@ -4,8 +4,8 @@
 //
 // PHP mints only; pista-api/apiToken.js verifies. A token is issued AFTER a
 // credit has been charged, so Node runs work only for requests someone paid for.
-// Before this, anyone could POST straight to /api/search-flights and spend up to
-// 20 SerpAPI calls per request without ever visiting check_quota.php.
+// Before this, anyone could POST straight to /api/search-flights and run a full
+// beam search without ever visiting check_quota.php.
 //
 //   v1.<base64url(payload)>.<base64url(HMAC-SHA256(secret, "v1.<base64url(payload)>"))>
 //

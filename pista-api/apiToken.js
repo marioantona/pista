@@ -2,8 +2,7 @@
 //
 // PHP charges a credit, then mints a short-lived, single-use token. Node refuses
 // to do any work without one. Without this, anyone could POST straight to
-// /api/search-flights and get a full beam search -- up to 20 SerpAPI calls --
-// without ever paying a credit.
+// /api/search-flights and get a full beam search without ever paying a credit.
 //
 // Wire format (minted by webroot/api_token.php):
 //
@@ -17,9 +16,12 @@
 // The secret never travels. The third segment is the HMAC OUTPUT; the secret is
 // the key. Both sides hold it privately.
 //
-// The payload is deliberately NOT bound to the search parameters: index.js calls
-// check_quota.php before it builds them, so PHP never sees them. It would also buy
-// nothing -- main.js's budget predictor already caps ANY search at 20 calls.
+// The payload is NOT bound to the search parameters: index.js calls
+// check_quota.php before it builds them, so PHP never sees them. The token proves
+// payment, not size -- requestLimits.js bounds the size. The original reason given
+// here, that main.js's predictor caps ANY search at 20 calls, was wrong: it floors
+// the beam at 1 and overspends when the budget cannot fit (RUNBOOK §11). Binding
+// the destination counts is part of the complexity-priced-searches roadmap item.
 
 const crypto = require('crypto')
 
