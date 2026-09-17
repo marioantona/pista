@@ -64,7 +64,8 @@ $children = (int) $itinerary['children'];
 // Refuse before charging: none of these should reach Node, or cost a credit.
 // Node enforces the same bounds (pista-api/requestLimits.js).
 if (count($flights) === 0 || count($flights) > PISTA_MAX_ITINERARY_LEGS
-    || $adults < 1 || $adults > 9 || $children < 0 || $children > 8) {
+    || $adults < 1 || $adults > 9 || $children < 0 || $children > 8
+    || $adults + $children > 9) {
     echo json_encode(['success' => false, 'error' => 'This itinerary cannot be verified.']);
     exit;
 }

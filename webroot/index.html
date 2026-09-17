@@ -28,9 +28,10 @@
     <script src="theme.js"></script>
     <!-- ?v= forces browsers past their 4-hour cached copy when index.js changes.
          Bump it on every index.js deploy (RUNBOOK §10). -->
-    <script type="module" src="index.js?v=20260917"></script>
+    <script type="module" src="index.js?v=20260917b"></script>
     <link rel="stylesheet" href="index.css">
-    <script src="i18n.js" defer></script>
+    <!-- Versioned for the same reason: index.js reads keys that older copies lack. -->
+    <script src="i18n.js?v=20260917b" defer></script>
 </head>
 <body>
     <!-- Leaflet Map Below -->
@@ -203,7 +204,7 @@
                 </div>
                 <div style="display: flex; align-items: center; width: 50%; gap: 4px;">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnDaysPerDestination" label="Days / Leg*" type="number" value="1" min="1" max="10" style="flex: 1; text-align: center;" data-i18n="days-per-dest-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnDaysPerDestination" label="Days / Leg*" type="number" value="1" min="1" max="20" style="flex: 1; text-align: center;" data-i18n="days-per-dest-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
             </div>
@@ -212,12 +213,12 @@
 
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnAdult" label="Adult" type="number" value="1" min="1" style="width: 70px; text-align: center;" data-i18n="adult-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnAdult" label="Adult" type="number" value="1" min="1" max="9" style="width: 70px; text-align: center;" data-i18n="adult-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnChild" label="Child" type="number" value="0" min="0" style="width: 70px; text-align: center;" data-i18n="child-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnChild" label="Child" type="number" value="0" min="0" max="8" style="width: 70px; text-align: center;" data-i18n="child-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
             </div>

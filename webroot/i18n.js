@@ -127,6 +127,10 @@ window.translations = {
         "js-no-routes": "No Routes Found matching your criteria.",
         "js-select-flight": "Please select a flight before proceeding.",
         "js-delete-confirm": "Are you sure you want to delete this trip?",
+        "js-bad-destinations": "Destinations must be a whole number from 1 to 10.",
+        "js-bad-days": "Days per leg must be a whole number from 1 to 20.",
+        "js-bad-passengers": "Passengers: 1–9 adults and 0–8 children, with no more than 9 in total.",
+        "js-too-many-includes": "You cannot have more desired destinations than destinations.",
     },
     es: {
         // Index / Landing Page
@@ -253,7 +257,11 @@ window.translations = {
         "js-quota-error": "Error al verificar el estado de la cuenta. Inténtalo de nuevo.",
         "js-no-routes": "No se encontraron rutas que coincidan con tus criterios.",
         "js-select-flight": "Por favor, selecciona un vuelo antes de continuar.",
-        "js-delete-confirm": "¿Estás seguro de que quieres eliminar este viaje?"
+        "js-delete-confirm": "¿Estás seguro de que quieres eliminar este viaje?",
+        "js-bad-destinations": "El número de destinos debe ser un número entero entre 1 y 10.",
+        "js-bad-days": "Los días por destino deben ser un número entero entre 1 y 20.",
+        "js-bad-passengers": "Pasajeros: de 1 a 9 adultos y de 0 a 8 niños, con un máximo de 9 en total.",
+        "js-too-many-includes": "No puedes tener más destinos deseados que destinos."
     },
     ca: {
         // Index / Landing Page
@@ -380,7 +388,11 @@ window.translations = {
         "js-quota-error": "Error al verificar l'estat del compte. Torna-ho a provar.",
         "js-no-routes": "No s'han trobat rutes que coincideixin amb els teus criteris.",
         "js-select-flight": "Si us plau, selecciona un vol abans de continuar.",
-        "js-delete-confirm": "Estàs segur que vols eliminar aquest viatge?"
+        "js-delete-confirm": "Estàs segur que vols eliminar aquest viatge?",
+        "js-bad-destinations": "El nombre de destinacions ha de ser un nombre enter entre 1 i 10.",
+        "js-bad-days": "Els dies per destinació han de ser un nombre enter entre 1 i 20.",
+        "js-bad-passengers": "Passatgers: d'1 a 9 adults i de 0 a 8 nens, amb un màxim de 9 en total.",
+        "js-too-many-includes": "No pots tenir més destinacions desitjades que destinacions."
     }
 };
 

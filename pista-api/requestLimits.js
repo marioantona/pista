@@ -22,11 +22,19 @@
 // webroot/configure.php -- change both together.
 const MAX_DESTINATIONS = 10
 const MAX_ITINERARY_LEGS = MAX_DESTINATIONS + 1
-const MAX_DAYS_PER_LEG = 10
 
-// Google Flights accepts at most 9 passengers.
+// daysPerLeg only shifts dates; it never changes the call count. 20 is a UX
+// choice, not a cost one. Mirrored in index.html and index.js.
+const MAX_DAYS_PER_LEG = 20
+
+// Google Flights searches at most 9 passengers in total, so a larger party would
+// fail at SerpAPI after the credit was charged. Confirmed 17 Sep 2026: 9+0, 8+1
+// and 1+8 succeed; 10+0 and 5+5 return "Total passengers should be less than or
+// equal to 9". SerpAPI's own docs do not state the limit. Mirrored in index.html, index.js
+// and verify_itinerary.php.
 const MAX_ADULTS = 9
 const MAX_CHILDREN = 8
+const MAX_PASSENGERS = 9
 
 const IATA = /^[A-Z]{3}$/
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -46,7 +54,8 @@ function isIsoDate(value) {
 function passengers(body) {
     const adults = body.adults === undefined ? 1 : body.adults
     const children = body.children === undefined ? 0 : body.children
-    if (!isIntIn(adults, 1, MAX_ADULTS) || !isIntIn(children, 0, MAX_CHILDREN)) return null
+    if (!isIntIn(adults, 1, MAX_ADULTS) || !isIntIn(children, 0, MAX_CHILDREN)
+        || adults + children > MAX_PASSENGERS) return null
     return { adults, children }
 }
 
@@ -133,6 +142,8 @@ function validateSearchBody(body) {
 module.exports = {
     MAX_DESTINATIONS,
     MAX_ITINERARY_LEGS,
+    MAX_DAYS_PER_LEG,
+    MAX_PASSENGERS,
     validateVerifyBody,
     validateSearchBody
 }

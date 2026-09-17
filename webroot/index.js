@@ -491,6 +491,33 @@ searchBtn.addEventListener('click', async () => {
     const includeInput = document.getElementById('returnDesiredDestinations').value
     const includeArray = includeInput ? includeInput.split(',').map(c => c.trim().toUpperCase()) : []
 
+    // Mirror of pista-api/requestLimits.js, checked BEFORE check_quota.php charges.
+    // The form's min/max only limit the +/- buttons; typed values reach here as-is,
+    // and a search Node refuses would otherwise still cost 2 credits (item 7f).
+    const wholeIn = (raw, min, max) => /^\d+$/.test(String(raw).trim()) && +raw >= min && +raw <= max
+    const tr = (key, fallback) => (window.translations[window.currentLang] || {})[key] || fallback
+    const adultRaw = document.getElementById("returnAdult").value
+    const childRaw = document.getElementById("returnChild").value
+    if (!wholeIn(mustfill3, 1, 10)) {
+        alert(tr("js-bad-destinations", "Destinations must be a whole number from 1 to 10."))
+        return
+    }
+    if (!wholeIn(mustfill4, 1, 20)) {
+        alert(tr("js-bad-days", "Days per leg must be a whole number from 1 to 20."))
+        return
+    }
+    if (!wholeIn(adultRaw, 1, 9) || !wholeIn(childRaw === "" ? "0" : childRaw, 0, 8)
+        || +adultRaw + +(childRaw || 0) > 9) {
+        alert(tr("js-bad-passengers", "Passengers: 1–9 adults and 0–8 children, with no more than 9 in total."))
+        return
+    }
+    // Repeats count once, as in Node, which also receives the deduplicated list.
+    const uniqueIncludes = [...new Set(includeArray.filter(c => c !== ""))]
+    if (uniqueIncludes.length > parseInt(mustfill3)) {
+        alert(tr("js-too-many-includes", "You cannot have more desired destinations than destinations."))
+        return
+    }
+
     //let user know inputs are being validated
     searchBtn.innerText = window.translations[window.currentLang]["js-validating"]
 
@@ -502,7 +529,7 @@ searchBtn.addEventListener('click', async () => {
         return
     }
 
-    for (const dest of includeArray) {
+    for (const dest of uniqueIncludes) {
         const isDestValid = await isValidAirportCode(dest)
         if (!isDestValid) {
             alert(`'${dest}' - ${window.translations[window.currentLang]["js-invalid-dest"]}`)
@@ -556,7 +583,7 @@ searchBtn.addEventListener('click', async () => {
         numDestinations: parseInt(mustfill3),
         daysPerLeg: parseInt(mustfill4),
         avoidCountries: avoidArray,
-        includeDestinations: includeArray,
+        includeDestinations: uniqueIncludes,
         avoidOriginCountry: avoidOrigin,
         region: userRegion,
         currency: userCurrency,
