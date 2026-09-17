@@ -20,6 +20,7 @@ const cors = require('cors');
 const { generateMultiCityItineraries } = require('./main'); 
 const { fetchReturnFlight } = require('./api');
 const { requireToken } = require('./apiToken');
+const { validateVerifyBody, validateSearchBody } = require('./requestLimits');
 
 const app = express();
 const PORT = 3000;
@@ -58,10 +59,14 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
             travelRegion
         } = req.body;
 
-        // Basic validation: Make sure the frontend didn't forget the required fields
-        if (!origin || !startDate || !numDestinations || !daysPerLeg) {
-            return res.status(400).json({ error: "Missing required search parameters." });
+        // Bound the search before any work. The token proves a credit was paid, not
+        // how big the search is -- without these, numDestinations: 500 would run (item 7).
+        const checked = validateSearchBody(req.body);
+        if (!checked.ok) {
+            return res.status(400).json({ success: false, error: checked.error });
         }
+        // Deduplicated: each mandatory destination is priced separately in main.js.
+        const { includeDestinations: uniqueIncludes } = checked.value;
 
         console.log(`[SERVER] Received search request for ${origin} starting ${startDate} for ${adults} Adults, ${children} Children`);
 
@@ -72,7 +77,7 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
             numDestinations, 
             daysPerLeg, 
             avoidCountries, 
-            includeDestinations, 
+            uniqueIncludes, 
             avoidOriginCountry,
             region,
             currency.toUpperCase(),
@@ -101,11 +106,12 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
 // Only verify_itinerary.php calls this, over localhost -- Apache also denies it publicly.
 app.post("/api/verify-itinerary", requireToken('verify'), async (req, res) => {
     try {
-        const { flights, region, currency} = req.body
-
-        if (!flights || !Array.isArray(flights) || flights.length === 0) {
-            return res.status(400).json({ error: "Missing or invalid flight data." })
+        // One SerpAPI call per leg, so the leg count is capped before any work (item 7).
+        const checked = validateVerifyBody(req.body)
+        if (!checked.ok) {
+            return res.status(400).json({ success: false, error: checked.error })
         }
+        const { flights, region, currency, adults, children } = checked.value
 
         console.log(`[SERVER] Verifying itinerary with ${flights.length} legs...`)
 
@@ -115,8 +121,10 @@ app.post("/api/verify-itinerary", requireToken('verify'), async (req, res) => {
                 flight.from,
                 flight.to,
                 flight.date,
-                region || "uk",
-                (currency || "GBP").toUpperCase()
+                region,
+                currency,
+                adults,
+                children
             )
             .then(updatedFlight => ({
                 flight_id: flight.flight_id, // Keep track of the DB ID

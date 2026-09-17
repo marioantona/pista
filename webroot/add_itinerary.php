@@ -26,6 +26,13 @@ if (!$data || !isset($data["flights"]) || !is_array($data["flights"]) || count($
     exit();
 }
 
+// Price verification spends one SerpAPI call per saved flight, so an oversized
+// trip must never be stored (Phase 0B item 7). No real search produces one.
+if (count($data["flights"]) > PISTA_MAX_ITINERARY_LEGS) {
+    echo json_encode(["success" => false, "error" => "An itinerary can have at most " . PISTA_MAX_ITINERARY_LEGS . " flights."]);
+    exit();
+}
+
 if (!isset($data["totalCost"]) || !is_numeric($data["totalCost"])) {
     echo json_encode(["success" => false, "error" => "Invalid total cost."]);
     exit();

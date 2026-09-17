@@ -2,6 +2,14 @@
 
 require_once __DIR__ . '/env.php';
 
+// Most flights one itinerary may hold: the UI allows 10 destinations, plus the
+// return leg. Price verification spends one SerpAPI call per flight, so this is
+// a cost cap, not a UI nicety (Phase 0B item 7). Mirrors MAX_ITINERARY_LEGS in
+// pista-api/requestLimits.js -- change both together.
+if (!defined('PISTA_MAX_ITINERARY_LEGS')) {
+    define('PISTA_MAX_ITINERARY_LEGS', 11);
+}
+
 // Database credentials, sourced from /var/www/pista.env
 $servername = $_ENV['DB_HOST'];
 $username   = $_ENV['DB_USER'];

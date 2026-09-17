@@ -10,15 +10,19 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get the POST JSON payload from the frontend
+// Only itinerary_id is read from the request. Everything sent to Node -- the
+// flights, region, currency and passenger counts -- comes from the database.
+// itineraries.js still posts flights/region/currency; they are ignored on purpose.
+// Trusting a client-supplied flights array let one credit buy an unbounded number
+// of SerpAPI calls, token or no token (Phase 0B item 7, RUNBOOK §17).
 $input = json_decode(file_get_contents('php://input'), true);
-if (!$input || !isset($input['itinerary_id']) || !isset($input['flights']) || !isset($input['region']) || !isset($input['currency'])) {
+$itinerary_id = is_array($input) && isset($input['itinerary_id'])
+    ? filter_var($input['itinerary_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : false;
+if ($itinerary_id === false) {
     echo json_encode(['success' => false, 'error' => 'Invalid payload.']);
     exit;
 }
-
-$itinerary_id = $input['itinerary_id'];
-$flights = $input['flights'];
 
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/api_token.php';
@@ -29,14 +33,56 @@ if ($conn->connect_error) {
 }
 
 // Security Check - Ensure the itinerary belongs to this user
-$check_stmt = $conn->prepare("SELECT itinerary_id FROM itineraries WHERE itinerary_id = ? AND user_id = ?");
+$check_stmt = $conn->prepare("SELECT currency, adults, children FROM itineraries WHERE itinerary_id = ? AND user_id = ?");
 $check_stmt->bind_param("ii", $itinerary_id, $user_id);
 $check_stmt->execute();
-if ($check_stmt->get_result()->num_rows === 0) {
+$itinerary = $check_stmt->get_result()->fetch_assoc();
+$check_stmt->close();
+if (!$itinerary) {
     echo json_encode(['success' => false, 'error' => 'Unauthorized or invalid itinerary.']);
     exit;
 }
-$check_stmt->close();
+
+$flights_stmt = $conn->prepare("SELECT flight_id, starting_point, ending_point, flight_date FROM flights WHERE itinerary_id = ? ORDER BY flight_id");
+$flights_stmt->bind_param("i", $itinerary_id);
+$flights_stmt->execute();
+$flights_result = $flights_stmt->get_result();
+$flights = [];
+while ($f = $flights_result->fetch_assoc()) {
+    $flights[] = [
+        'flight_id' => (int) $f['flight_id'],
+        'from'      => $f['starting_point'],
+        'to'        => $f['ending_point'],
+        'date'      => $f['flight_date'],
+    ];
+}
+$flights_stmt->close();
+
+$adults   = (int) $itinerary['adults'];
+$children = (int) $itinerary['children'];
+
+// Refuse before charging: none of these should reach Node, or cost a credit.
+// Node enforces the same bounds (pista-api/requestLimits.js).
+if (count($flights) === 0 || count($flights) > PISTA_MAX_ITINERARY_LEGS
+    || $adults < 1 || $adults > 9 || $children < 0 || $children > 8) {
+    echo json_encode(['success' => false, 'error' => 'This itinerary cannot be verified.']);
+    exit;
+}
+
+// The user's saved region, with the frontend's own default. Validated because
+// preferences.php stores whatever was posted.
+$region = 'uk';
+$pref_stmt = $conn->prepare("SELECT region FROM preferences WHERE user_id = ?");
+$pref_stmt->bind_param("i", $user_id);
+$pref_stmt->execute();
+$pref = $pref_stmt->get_result()->fetch_assoc();
+$pref_stmt->close();
+if ($pref && is_string($pref['region']) && preg_match('/^[a-z]{2}$/', $pref['region'])) {
+    $region = $pref['region'];
+}
+
+// The trip's own currency, so verified prices are stored in the unit the row declares.
+$currency = strtoupper((string) $itinerary['currency']);
 
 // Check and deduct Quota (1 credit for price verification)
 $stmt = $conn->prepare("SELECT credits_remaining FROM users WHERE user_id = ?");
@@ -67,9 +113,11 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'X-PISTA-Token: ' . pista_api_token('verify', 'u:' . $user_id),
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-    'flights' => $flights,
-    'region' => $input['region'],
-    'currency' => $input['currency']
+    'flights'  => $flights,
+    'region'   => $region,
+    'currency' => $currency,
+    'adults'   => $adults,
+    'children' => $children,
 ]));
 
 $node_response_raw = curl_exec($ch);
@@ -82,23 +130,34 @@ if ($http_status !== 200 || !$node_response_raw) {
 }
 
 $node_data = json_decode($node_response_raw, true);
-if (!$node_data['success']) {
-    echo json_encode(['success' => false, 'error' => $node_data['error']]);
+if (!is_array($node_data) || empty($node_data['success'])) {
+    echo json_encode(['success' => false, 'error' => $node_data['error'] ?? 'Verification failed.']);
+    exit;
+}
+
+// Node must answer for exactly the legs it was sent, and nothing else.
+$sent_ids = array_column($flights, 'flight_id');
+$verified_legs = $node_data['results'] ?? null;
+if (!is_array($verified_legs) || count($verified_legs) !== count($flights)) {
+    error_log('verify_itinerary.php: Node returned an unexpected result count for itinerary ' . $itinerary_id);
+    echo json_encode(['success' => false, 'error' => 'Verification failed.']);
     exit;
 }
 
 // Update the Database with the newly fetched prices
-$verified_legs = $node_data['results'];
 $new_total_cost = 0;
 $has_unavailable_flights = false;
 
 $update_flight = $conn->prepare("UPDATE flights SET previous_cost = cost, cost = ? WHERE flight_id = ? AND itinerary_id = ?");
 
 foreach ($verified_legs as $leg) {
-    $leg_cost = $leg['price'];
-    $f_id = $leg['flight_id'];
-    
-    if ($leg['status'] === 'unavailable' || $leg_cost < 0) {
+    $f_id = (int) ($leg['flight_id'] ?? 0);
+    if (!in_array($f_id, $sent_ids, true)) {
+        continue;
+    }
+    $leg_cost = is_numeric($leg['price'] ?? null) ? (float) $leg['price'] : -1.00;
+
+    if (($leg['status'] ?? '') === 'unavailable' || $leg_cost < 0) {
         $has_unavailable_flights = true;
         $leg_cost = -1.00;
     } else {
