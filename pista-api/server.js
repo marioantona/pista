@@ -19,9 +19,17 @@ const cors = require('cors');
 // Import your brilliant routing engine!
 const { generateMultiCityItineraries } = require('./main'); 
 const { fetchReturnFlight } = require('./api');
+const { requireToken } = require('./apiToken');
 
 const app = express();
 const PORT = 3000;
+
+// 🔴 PM2 MUST RUN THIS IN FORK MODE -- a correctness requirement, not a preference.
+// apiToken.js keeps its single-use replay cache in this process's memory. Under
+// cluster mode each worker would see only part of the traffic, so a replayed
+// X-PISTA-Token would be accepted whenever it reached a different worker --
+// roughly half the time -- and the single-use guarantee would be gone.
+// Check with: pm2 jlist  ->  "exec_mode": "fork_mode"
 
 // --- Middleware ---
 // CORS allows your web frontend (e.g., localhost:5173 or a live website) to make requests to this API
@@ -31,7 +39,8 @@ app.use(express.json());
 
 // BEAM SEARCH API Endpoint 
 // We use a POST request because the frontend is sending us a "payload" of complex search parameters
-app.post('/api/search-flights', async (req, res) => {
+// requireToken runs before any validation: no valid token, no work (RUNBOOK §17).
+app.post('/api/search-flights', requireToken('search'), async (req, res) => {
     try {
         // Unpack the user's "order" from the incoming request body
         const {
@@ -89,7 +98,8 @@ app.post('/api/search-flights', async (req, res) => {
 });
 
 // Verify Prices Endpoint
-app.post("/api/verify-itinerary", async (req, res) => {
+// Only verify_itinerary.php calls this, over localhost -- Apache also denies it publicly.
+app.post("/api/verify-itinerary", requireToken('verify'), async (req, res) => {
     try {
         const { flights, region, currency} = req.body
 
