@@ -68,3 +68,18 @@ CREATE TABLE IF NOT EXISTS guest_usage (
     credits_remaining INT DEFAULT 2,
     last_search TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+-- rate_limits (Security) -- Phase 0B item 5
+-- Fixed-window counters for login.php and forgot_password.php, written through
+-- webroot/rate_limit.php. Buckets look like "login:ip:<ip>" or
+-- "pwreset:email:<sha256>" -- raw email addresses never enter this table.
+-- VARCHAR(100), not the 64 first proposed: "pwreset:email:" + 64 hex is 78 chars.
+-- window_start must NOT carry ON UPDATE CURRENT_TIMESTAMP (guest_usage does):
+-- every increment would then push the window forward and it would never expire.
+-- Expired rows are deleted opportunistically by the helper; there is no cron.
+-- Created as root (sudo mysql) -- pista_user has no DDL.
+CREATE TABLE IF NOT EXISTS rate_limits (
+    bucket VARCHAR(100) NOT NULL PRIMARY KEY,
+    attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    window_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_window_start (window_start)
+);
