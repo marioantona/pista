@@ -1,6 +1,8 @@
 <?php
 require 'configure.php';
 require 'vendor/autoload.php';
+require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/rate_limit.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -23,6 +25,47 @@ $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'message' => 'Invalid email address.']);
+    exit;
+}
+
+// Rate limiting -- RUNBOOK §17. Every request counts, registered address or not,
+// because every request to a registered address sends a Brevo email and the free
+// tier is 300/day: without this, one script drains the allowance and password
+// reset silently stops working for real users until midnight.
+//
+// Buckets are checked for EVERY address before the user lookup, so a throttled
+// response cannot reveal whether the account exists -- and it returns the same
+// generic body, byte for byte, for the same reason.
+//
+// This limiter FAILS CLOSED. If it cannot read or write its table, no email is
+// sent. Protecting the Brevo allowance beats the availability of a flow whose
+// token lasts 30 minutes anyway. (login.php makes the opposite choice.) The error
+// body gives nothing away: the failure happens before the lookup, whatever the
+// address.
+$pista_rl_ip    = 'pwreset:ip:' . pista_client_ip();
+$pista_rl_email = 'pwreset:email:' . pista_rate_email_key($email);
+
+try {
+    $throttled_ip    = pista_rate_limited($conn, $pista_rl_ip, 10, 3600);
+    $throttled_email = pista_rate_limited($conn, $pista_rl_email, 3, 3600);
+
+    // Refused requests still count. In a fixed window that cannot extend the lockout.
+    pista_rate_hit($conn, $pista_rl_ip, 3600);
+    pista_rate_hit($conn, $pista_rl_email, 3600);
+} catch (\Throwable $e) {
+    error_log("Password reset rate limiter failed -- refusing the request (fail closed): " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An error occurred. Please try again later.']);
+    exit;
+}
+
+if ($throttled_ip || $throttled_email) {
+    // Log which bucket tripped and the client IP, never the address itself.
+    error_log(sprintf(
+        "Password reset throttled: %s bucket, client %s",
+        $throttled_email ? 'email' : 'ip',
+        pista_client_ip()
+    ));
+    echo json_encode(['success' => true, 'message' => PISTA_RESET_GENERIC]);
     exit;
 }
 
