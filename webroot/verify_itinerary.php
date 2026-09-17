@@ -21,6 +21,7 @@ $itinerary_id = $input['itinerary_id'];
 $flights = $input['flights'];
 
 require_once __DIR__ . '/configure.php';
+require_once __DIR__ . '/api_token.php';
 
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
@@ -59,7 +60,12 @@ $node_url = 'http://localhost:3000/api/verify-itinerary';
 $ch = curl_init($node_url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+// Node refuses /api/verify-itinerary without a 'verify' token (RUNBOOK §17). The
+// credit was charged just above.
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'X-PISTA-Token: ' . pista_api_token('verify', 'u:' . $user_id),
+]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'flights' => $flights,
     'region' => $input['region'],

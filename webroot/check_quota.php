@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/api_token.php';
 
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
@@ -31,7 +32,11 @@ if (isset($_SESSION['user_id'])) {
             $update->bind_param("ii", $new_quota, $user_id);
             $update->execute();
             
-            echo json_encode(['success' => true, 'remaining' => $new_quota, 'type' => 'registered']);
+            // The credit is charged; the token is what lets Node run the search.
+            echo json_encode([
+                'success' => true, 'remaining' => $new_quota, 'type' => 'registered',
+                'token' => pista_api_token('search', 'u:' . $user_id),
+            ]);
         } else {
             // Out of quota
             echo json_encode(['success' => false, 'error' => 'You need ' . $search_cost . ' credits to search. You have ' . $row['credits_remaining'] . ' remaining. Quotas reset on the 1st of the month.']);
@@ -63,7 +68,10 @@ else {
             $update->bind_param('is', $new_quota, $guest_ip);
             $update->execute();
 
-            echo json_encode(['success' => true, 'remaining' => ($new_quota), 'type' => 'guest']);
+            echo json_encode([
+                'success' => true, 'remaining' => ($new_quota), 'type' => 'guest',
+                'token' => pista_api_token('search', 'g:' . hash('sha256', $guest_ip)),
+            ]);
         } else {
             //IP out of free searches
             echo json_encode(['success' => false, 'error' => 'Free trial limit reached! Please Log In or Sign Up to receive 10 free monthly credits.']);
@@ -75,7 +83,10 @@ else {
         $insert->bind_param("si", $guest_ip, $initial_remainder);
         $insert->execute();
 
-        echo json_encode(['success' => true, 'remaining' => ($initial_remainder), 'type' => 'guest']);
+        echo json_encode([
+            'success' => true, 'remaining' => ($initial_remainder), 'type' => 'guest',
+            'token' => pista_api_token('search', 'g:' . hash('sha256', $guest_ip)),
+        ]);
     }
     $stmt->close();
 }
