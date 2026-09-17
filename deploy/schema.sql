@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS guest_usage (
     credits_remaining INT DEFAULT 2,
     last_search TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
 -- rate_limits (Security) -- Phase 0B item 5
 -- Fixed-window counters for login.php and forgot_password.php, written through
 -- webroot/rate_limit.php. Buckets look like "login:ip:<ip>" or
