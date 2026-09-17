@@ -3,7 +3,9 @@
 require('dotenv').config({ quiet: true })
 
 // Fail fast and loudly rather than at the first API call
-const REQUIRED_ENV = ['SERPAPI_KEY']
+// PISTA_API_SECRET verifies X-PISTA-Token and must match /var/www/pista.env.
+// PISTA_API_SECRET_PREVIOUS and TOKEN_ENFORCE are optional, so not listed.
+const REQUIRED_ENV = ['SERPAPI_KEY', 'PISTA_API_SECRET']
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key])
 if (missingEnv.length > 0) {
     console.error(`[FATAL] Missing environment variables: ${missingEnv.join(', ')}`)

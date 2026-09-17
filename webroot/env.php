@@ -18,6 +18,8 @@ if (!defined('PISTA_ENV_LOADED')) {
         'APP_BASE_URL',
         'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
         'MICROSOFT_CLIENT_ID', 'MICROSOFT_CLIENT_SECRET',
-        'BREVO_SMTP_USER', 'BREVO_SMTP_PASS'
+        'BREVO_SMTP_USER', 'BREVO_SMTP_PASS',
+        // Shared with ~/pista-api/.env; signs X-PISTA-Token (api_token.php)
+        'PISTA_API_SECRET'
     ])->notEmpty();
 }
