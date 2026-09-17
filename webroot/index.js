@@ -514,6 +514,10 @@ searchBtn.addEventListener('click', async () => {
     //all validations passed
 
     searchBtn.innerText = window.translations[window.currentLang]["js-quota-verifying"]
+    // Single-use proof that check_quota.php charged for this search. The Express
+    // server refuses /api/search-flights without it (RUNBOOK §17). It expires in
+    // 120 s, so it is fetched here, immediately before the search, never cached.
+    let searchToken = null
     try {
         const quotaRes = await fetch("check_quota.php")
         const quotaData = await quotaRes.json()
@@ -523,6 +527,7 @@ searchBtn.addEventListener('click', async () => {
             searchBtn.innerText = window.translations[window.currentLang]["search-btn"]
             return
         }
+        searchToken = quotaData.token
         console.log(`Quota Approved! Remaining searches: ${quotaData.remaining} (${quotaData.type} user)`)
     } catch (error) {
         console.error("Quota check failed", error)
@@ -575,7 +580,8 @@ searchBtn.addEventListener('click', async () => {
         const response = await fetch('/api/search-flights', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-PISTA-Token': searchToken
             },
             body: JSON.stringify(searchParams)  
         })
