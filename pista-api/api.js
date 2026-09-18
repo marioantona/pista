@@ -1,6 +1,19 @@
 const API_KEY = process.env.SERPAPI_KEY
 
+// serpapi 2.2.1: getJson(params, callback) invokes the callback ONLY for HTTP 200.
+// Any other status -- bad parameters, bad key, rate limit, exhausted quota, 5xx --
+// and every network error or timeout REJECTS the promise it returns instead. That
+// promise used to be dropped on the floor here, so the rejection was unhandled and
+// Node 24 exited the process: a single SerpAPI error took pista-router down, failed
+// every search in flight and emptied the token replay cache. Hence the .catch(reject)
+// on each call below: the callback is the success path, .catch is the error path.
 const { getJson } = require("serpapi")
+
+// SerpAPI rejects with the raw response body (a string), not an Error.
+function serpApiError(cause) {
+    const text = typeof cause === 'string' ? cause : (cause && cause.message) || String(cause)
+    return new Error(`SerpAPI request failed: ${text}`)
+}
 
 function cleanParams(obj) {
     return Object.fromEntries(
@@ -35,7 +48,7 @@ function fetchExploreDestinations(originAirportCode, outboundDate, region, curre
             } else {
                 resolve([])
             }
-        })
+        }).catch(err => reject(serpApiError(err)))
 
     })
 }
@@ -72,7 +85,7 @@ function fetchReturnFlight(originAirportCode, destinationAirportCode, outboundDa
             } else {
                 reject(new Error(`No return flight found from ${originAirportCode} to ${destinationAirportCode}`))
             }
-        })
+        }).catch(err => reject(serpApiError(err)))
     })
 
 
@@ -118,7 +131,7 @@ function fetchBatchFlights(originsStr, destinationsStr, outboundDate, region, cu
             } else {
                 resolve([]) // resolve empty if no flights found
             }
-        })
+        }).catch(err => reject(serpApiError(err)))
     })
 }
 
