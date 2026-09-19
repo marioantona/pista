@@ -40,6 +40,14 @@ function enforcing() {
     return process.env.TOKEN_ENFORCE === 'true'
 }
 
+// Separate switch for the n/d size claims, so the staged rollout of complexity
+// pricing has its own one-variable rollback and cannot disturb the token guard
+// itself. Off => a token with no claims (an older check_quota.php, or a client
+// holding a cached script) is accepted and the mismatch only logged.
+function bindEnforcing() {
+    return process.env.TOKEN_BIND_ENFORCE === 'true'
+}
+
 // ---------------------------------------------------------------------------
 // Replay cache.
 //
@@ -112,8 +120,11 @@ function requireToken(scope) {
 
         if (reason === null) {
             const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'))
+            // The payload is authenticated by here, so the route may trust its
+            // claims -- n and d cap how large the paid-for search may be.
+            req.pistaToken = payload
             // Log the subject and a jti prefix only -- never the token itself.
-            console.log(`[TOKEN] ${scope} valid sub=${payload.sub} jti=${payload.jti.slice(0, 8)}`)
+            console.log(`[TOKEN] ${scope} valid sub=${payload.sub} jti=${payload.jti.slice(0, 8)} n=${payload.n ?? '-'} d=${payload.d ?? '-'}`)
             return next()
         }
 
@@ -131,4 +142,4 @@ function requireToken(scope) {
     }
 }
 
-module.exports = { requireToken, checkToken, _seen: seen }
+module.exports = { requireToken, checkToken, bindEnforcing, _seen: seen }

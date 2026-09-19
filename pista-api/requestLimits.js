@@ -36,6 +36,13 @@ const MAX_ADULTS = 9
 const MAX_CHILDREN = 8
 const MAX_PASSENGERS = 9
 
+// Google Flights sells about 11 months ahead. Measured 18 September 2026 on
+// LHR->CDG: flights at +320 and +330 days, none at +340. A search whose last leg
+// falls past this spends calls and credits on legs that cannot return anything.
+// A heuristic, not a promise -- schedules differ by airline. Mirrored by
+// PISTA_MAX_HORIZON_DAYS (PHP) and search_cost.js (browser).
+const MAX_HORIZON_DAYS = 330
+
 const IATA = /^[A-Z]{3}$/
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -105,7 +112,8 @@ function validateVerifyBody(body) {
 function validateSearchBody(body) {
     if (!body || typeof body !== 'object') return fail('Missing required search parameters.')
 
-    const { origin, startDate, numDestinations, daysPerLeg, includeDestinations = [] } = body
+    const { origin, startDate, numDestinations, daysPerLeg, includeDestinations = [],
+        region = 'uk', currency = 'GBP' } = body
     if (origin === undefined || startDate === undefined
         || numDestinations === undefined || daysPerLeg === undefined) {
         return fail('Missing required search parameters.')
@@ -127,6 +135,15 @@ function validateSearchBody(body) {
         || !includeDestinations.every(c => typeof c === 'string' && IATA.test(c))) {
         return fail('Invalid desired destinations.')
     }
+    // The last date the search touches: startDate + N legs of daysPerLeg. Whole
+    // UTC days on both sides, so a timezone offset cannot shift the comparison.
+    const startMs = Date.parse(`${startDate}T00:00:00Z`)
+    const todayMs = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`)
+    const lastLegDays = Math.round((startMs - todayMs) / 86400000) + numDestinations * daysPerLeg
+    if (lastLegDays > MAX_HORIZON_DAYS) {
+        return fail(`The last flight would be more than ${MAX_HORIZON_DAYS} days away, which is past what Google Flights sells.`)
+    }
+
     // main.js prices every mandatory destination separately, so a repeated code
     // would buy extra calls. Deduplicate before counting, and pass on the result.
     const uniqueIncludes = [...new Set(includeDestinations)]
@@ -136,11 +153,30 @@ function validateSearchBody(body) {
     const pax = passengers(body)
     if (!pax) return fail('Invalid passenger count.')
 
-    return { ok: true, value: { includeDestinations: uniqueIncludes, ...pax } }
+    // Both were previously unchecked, and server.js called currency.toUpperCase()
+    // on whatever arrived: a request without one returned 500 AFTER the credits
+    // had been charged. They default instead, to the same values the frontend uses.
+    if (typeof region !== 'string' || !/^[a-z]{2}$/i.test(region)) {
+        return fail('Invalid region.')
+    }
+    if (typeof currency !== 'string' || !/^[A-Za-z]{3}$/.test(currency)) {
+        return fail('Invalid currency.')
+    }
+
+    return {
+        ok: true,
+        value: {
+            includeDestinations: uniqueIncludes,
+            region: region.toLowerCase(),
+            currency: currency.toUpperCase(),
+            ...pax
+        }
+    }
 }
 
 module.exports = {
     MAX_DESTINATIONS,
+    MAX_HORIZON_DAYS,
     MAX_ITINERARY_LEGS,
     MAX_DAYS_PER_LEG,
     MAX_PASSENGERS,
