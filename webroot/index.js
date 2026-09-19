@@ -252,6 +252,67 @@ function setupAutocomplete(inputEl, wrapperEl, dataList, isMulti) {
 }
 
 // helper for +/- Stepper Buttons
+// --- Credit price line -------------------------------------------------------
+// What this search will cost, shown before anything is charged. The arithmetic is
+// search_cost.js, a mirror of the authoritative search_cost.php (the hook fails the
+// build if they disagree). The balance comes from quota_status.php, which only reads.
+let creditBalance = null
+
+function creditText(key, fallback) {
+    const table = window.translations && window.translations[window.currentLang]
+    return (table && table[key]) || fallback
+}
+
+function renderCreditLine() {
+    const costEl = document.getElementById("credit-cost")
+    const balanceEl = document.getElementById("credit-balance")
+    if (!costEl || !window.PISTA_COST) return
+
+    const n = parseInt(document.getElementById("returnNumberOfDestinations").value)
+    const rawIncludes = document.getElementById("returnDesiredDestinations").value
+    const includes = rawIncludes ? rawIncludes.split(",").map(c => c.trim().toUpperCase()).filter(c => c !== "") : []
+    const d = new Set(includes).size
+
+    if (!Number.isInteger(n) || n < 1 || n > 10 || d > n) {
+        costEl.textContent = creditText("credit-cost-unknown", "Pricing this search…")
+        costEl.classList.remove("credit-cost-high")
+        return
+    }
+
+    const { credits } = window.PISTA_COST.searchCost(n, d)
+    costEl.textContent = creditText("credit-cost", "This search costs {credits} credits").replace("{credits}", credits)
+    // Anything above the base price is worth noticing before pressing Search.
+    costEl.classList.toggle("credit-cost-high", credits > 2)
+
+    if (balanceEl) {
+        balanceEl.textContent = creditBalance === null
+            ? ""
+            : creditText("credit-balance", "you have {remaining}").replace("{remaining}", creditBalance)
+    }
+}
+
+// Reads the balance; never charges. Safe to call on load and after a search.
+async function refreshCreditLine() {
+    try {
+        const res = await fetch("quota_status.php")
+        const data = await res.json()
+        if (data.success) creditBalance = data.remaining
+    } catch (e) {
+        creditBalance = null   // the price still shows; only the balance is unknown
+    }
+    renderCreditLine()
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    ["returnNumberOfDestinations", "returnDesiredDestinations"].forEach(id => {
+        const el = document.getElementById(id)
+        // "blur" matters: picking an airport from the autocomplete sets .value and
+        // dispatches blur, not input, so without it the price would go stale.
+        if (el) ["input", "change", "blur"].forEach(ev => el.addEventListener(ev, renderCreditLine))
+    })
+    refreshCreditLine()
+})
+
 window.stepInput = function(id, delta) {
     const input = document.getElementById(id)
     let val = parseInt(input.value) || 0
@@ -261,6 +322,8 @@ window.stepInput = function(id, delta) {
     val += delta
     if (val >= min && val <= max) {
         input.value = val
+        // Setting .value fires no input event, so the price would go stale.
+        renderCreditLine()
     }
 }
 
@@ -517,6 +580,15 @@ searchBtn.addEventListener('click', async () => {
         alert(tr("js-too-many-includes", "You cannot have more desired destinations than destinations."))
         return
     }
+    // Airlines have not published flights past the booking horizon, so the later
+    // legs could only come back empty -- after the credits were spent on the
+    // earlier ones. Node refuses these too; here it costs nothing (RUNBOOK §11).
+    const horizonDays = window.PISTA_COST.daysToLastLeg(mustfill2, parseInt(mustfill3), parseInt(mustfill4))
+    if (horizonDays !== null && horizonDays > window.PISTA_COST.MAX_HORIZON_DAYS) {
+        alert(tr("js-past-horizon", "The last flight would be more than {days} days away. Airlines have not released those flights yet, so try an earlier start date, fewer destinations or shorter legs.")
+            .replace("{days}", window.PISTA_COST.MAX_HORIZON_DAYS))
+        return
+    }
 
     //let user know inputs are being validated
     searchBtn.innerText = window.translations[window.currentLang]["js-validating"]
@@ -546,16 +618,29 @@ searchBtn.addEventListener('click', async () => {
     // 120 s, so it is fetched here, immediately before the search, never cached.
     let searchToken = null
     try {
-        const quotaRes = await fetch("check_quota.php")
+        // The SHAPE of the search, never its price: check_quota.php computes the
+        // cost itself and binds these counts into the token, so the search Node
+        // runs cannot be bigger than the one that was paid for (RUNBOOK §12).
+        const quotaRes = await fetch("check_quota.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                numDestinations: parseInt(mustfill3),
+                includeDestinations: uniqueIncludes
+            })
+        })
         const quotaData = await quotaRes.json()
 
         if (!quotaData.success) {
             alert("🛑 " + quotaData.error)
             searchBtn.innerText = window.translations[window.currentLang]["search-btn"]
+            refreshCreditLine()
             return
         }
         searchToken = quotaData.token
-        console.log(`Quota Approved! Remaining searches: ${quotaData.remaining} (${quotaData.type} user)`)
+        creditBalance = quotaData.remaining
+        renderCreditLine()
+        console.log(`Quota approved: charged ${quotaData.cost} credits (up to ${quotaData.calls} lookups), ${quotaData.remaining} left (${quotaData.type} user)`)
     } catch (error) {
         console.error("Quota check failed", error)
         alert(window.translations[window.currentLang]["js-quota-error"])

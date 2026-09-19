@@ -580,3 +580,42 @@ html, body {
         margin: 0;
     }
 }
+/* Credit price line and explainer (complexity pricing, RUNBOOK §12).
+   Uses the Material tokens the rest of the form uses, so it follows both themes. */
+.credit-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: Roboto, sans-serif;
+    font-size: 13px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 4px 2px 0;
+}
+
+.credit-line .credit-cost-high {
+    color: var(--md-sys-color-primary);
+    font-weight: 500;
+}
+
+.credit-balance {
+    opacity: 0.85;
+}
+
+.credit-explainer {
+    font-family: Roboto, sans-serif;
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 2px 4px;
+}
+
+.credit-explainer summary {
+    cursor: pointer;
+    padding: 2px 0;
+}
+
+.credit-explainer p {
+    margin: 4px 0 0;
+    line-height: 1.45;
+}

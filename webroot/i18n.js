@@ -131,6 +131,12 @@ window.translations = {
         "js-bad-days": "Days per leg must be a whole number from 1 to 20.",
         "js-bad-passengers": "Passengers: 1–9 adults and 0–8 children, with no more than 9 in total.",
         "js-too-many-includes": "You cannot have more desired destinations than destinations.",
+        "credit-cost-unknown": "Pricing this search…",
+        "credit-cost": "This search costs {credits} credits",
+        "credit-balance": "you have {remaining}",
+        "credit-explainer-title": "How credits work",
+        "js-past-horizon": "The last flight would be more than {days} days away. Airlines have not released those flights yet, so try an earlier start date, fewer destinations or shorter legs.",
+        "credit-explainer-body": "Every search asks a flight data provider for live prices, which is what a credit pays for. A basic search costs 2 credits, and checking the price of a saved trip costs 1. Searches with more destinations, or with destinations you insist on visiting, have to check far more routes, so they cost more — the price is always shown above before you search. Registered accounts get 10 credits a month, which reset on the 1st.",
     },
     es: {
         // Index / Landing Page
@@ -261,7 +267,13 @@ window.translations = {
         "js-bad-destinations": "El número de destinos debe ser un número entero entre 1 y 10.",
         "js-bad-days": "Los días por destino deben ser un número entero entre 1 y 20.",
         "js-bad-passengers": "Pasajeros: de 1 a 9 adultos y de 0 a 8 niños, con un máximo de 9 en total.",
-        "js-too-many-includes": "No puedes tener más destinos deseados que destinos."
+        "js-too-many-includes": "No puedes tener más destinos deseados que destinos.",
+        "credit-cost-unknown": "Calculando el coste…",
+        "credit-cost": "Esta búsqueda cuesta {credits} créditos",
+        "credit-balance": "tienes {remaining}",
+        "credit-explainer-title": "Cómo funcionan los créditos",
+        "js-past-horizon": "El último vuelo sería dentro de más de {days} días. Las aerolíneas aún no han publicado esos vuelos: prueba con una fecha anterior, menos destinos o etapas más cortas.",
+        "credit-explainer-body": "Cada búsqueda consulta precios en directo a un proveedor de datos de vuelos, y eso es lo que paga un crédito. Una búsqueda básica cuesta 2 créditos y comprobar el precio de un viaje guardado cuesta 1. Las búsquedas con más destinos, o con destinos que quieres visitar sí o sí, tienen que revisar muchas más rutas, así que cuestan más: el precio siempre aparece arriba antes de buscar. Las cuentas registradas reciben 10 créditos al mes, que se renuevan el día 1."
     },
     ca: {
         // Index / Landing Page
@@ -392,7 +404,13 @@ window.translations = {
         "js-bad-destinations": "El nombre de destinacions ha de ser un nombre enter entre 1 i 10.",
         "js-bad-days": "Els dies per destinació han de ser un nombre enter entre 1 i 20.",
         "js-bad-passengers": "Passatgers: d'1 a 9 adults i de 0 a 8 nens, amb un màxim de 9 en total.",
-        "js-too-many-includes": "No pots tenir més destinacions desitjades que destinacions."
+        "js-too-many-includes": "No pots tenir més destinacions desitjades que destinacions.",
+        "credit-cost-unknown": "Calculant el cost…",
+        "credit-cost": "Aquesta cerca costa {credits} crèdits",
+        "credit-balance": "tens {remaining}",
+        "credit-explainer-title": "Com funcionen els crèdits",
+        "js-past-horizon": "L'últim vol seria d'aquí a més de {days} dies. Les aerolínies encara no han publicat aquests vols: prova una data anterior, menys destinacions o etapes més curtes.",
+        "credit-explainer-body": "Cada cerca consulta preus en directe a un proveïdor de dades de vols, i això és el que paga un crèdit. Una cerca bàsica costa 2 crèdits i comprovar el preu d'un viatge desat en costa 1. Les cerques amb més destinacions, o amb destinacions que vols visitar sí o sí, han de revisar moltes més rutes, així que costen més: el preu sempre es mostra a dalt abans de cercar. Els comptes registrats reben 10 crèdits al mes, que es renoven l'1."
     }
 };
 

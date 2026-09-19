@@ -28,10 +28,13 @@
     <script src="theme.js"></script>
     <!-- ?v= forces browsers past their 4-hour cached copy when index.js changes.
          Bump it on every index.js deploy (RUNBOOK §10). -->
-    <script type="module" src="index.js?v=20260917b"></script>
+    <!-- Classic script, so it runs before the deferred module below and index.js
+         can read window.PISTA_COST. Mirrors search_cost.php; see RUNBOOK §12. -->
+    <script src="search_cost.js?v=20260919"></script>
+    <script type="module" src="index.js?v=20260919"></script>
     <link rel="stylesheet" href="index.css">
     <!-- Versioned for the same reason: index.js reads keys that older copies lack. -->
-    <script src="i18n.js?v=20260917b" defer></script>
+    <script src="i18n.js?v=20260919" defer></script>
 </head>
 <body>
     <!-- Leaflet Map Below -->
@@ -242,6 +245,26 @@
                         <label for="returnAvoidOriginCountry" style="color: var(--md-sys-color-on-surface-variant); font-size: 14px; cursor: pointer;" data-i18n="avoid-origin-label">Avoid Origin Country</label>
                     </div>
                 </div>
+            </details>
+
+            <!-- What this search will cost, priced from the form before anything is
+                 charged. The authority is search_cost.php; this is the same formula. -->
+            <div id="credit-line" class="credit-line">
+                <!-- No data-i18n: renderCreditLine() owns this text, and translatePage()
+                     runs after it and would otherwise overwrite the computed price. -->
+                <span id="credit-cost">Pricing this search…</span>
+                <span id="credit-balance" class="credit-balance"></span>
+            </div>
+            <details class="credit-explainer">
+                <summary data-i18n="credit-explainer-title">How credits work</summary>
+                <p data-i18n="credit-explainer-body">
+                    Every search asks a flight data provider for live prices, which is what a credit
+                    pays for. A basic search costs 2 credits, and checking the price of a saved trip
+                    costs 1. Searches with more destinations, or with destinations you insist on
+                    visiting, have to check far more routes, so they cost more — the price is always
+                    shown above before you search. Registered accounts get 10 credits a month, which
+                    reset on the 1st.
+                </p>
             </details>
 
             <md-filled-button id="search-btn" class="next-btn" data-i18n="search-btn">Search</md-filled-button>
