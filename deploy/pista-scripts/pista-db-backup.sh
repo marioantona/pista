@@ -64,7 +64,13 @@ if [[ "$(date +%u)" == "7" ]]; then
 fi
 
 # ── Rotate ──────────────────────────────────────────────────────────────────
-ls -1t "$DAILY"/${DB_NAME}_*.sql.gz  2>/dev/null | tail -n +$((KEEP_DAILY + 1))  | xargs -r rm --
-ls -1t "$WEEKLY"/${DB_NAME}_*.sql.gz 2>/dev/null | tail -n +$((KEEP_WEEKLY + 1)) | xargs -r rm --
+# `|| true` is not cosmetic. With `set -euo pipefail`, `ls` on a glob that matches
+# nothing exits 2, that status propagates through the pipe, and the script dies
+# BEFORE the "ok:" line -- silently, after a perfectly good dump. That is exactly
+# what happened every night from 15 to 19 September 2026: the weekly directory was
+# empty (no Sunday had passed since install), so every run exited 2 and logged no
+# success line, while cron saw a failure and nothing alerted.
+ls -1t "$DAILY"/${DB_NAME}_*.sql.gz  2>/dev/null | tail -n +$((KEEP_DAILY + 1))  | xargs -r rm -- || true
+ls -1t "$WEEKLY"/${DB_NAME}_*.sql.gz 2>/dev/null | tail -n +$((KEEP_WEEKLY + 1)) | xargs -r rm -- || true
 
 echo "[$(date --iso-8601=seconds)] ok: $outfile ($((size / 1024)) KiB), $(ls -1 "$DAILY" | wc -l) daily / $(ls -1 "$WEEKLY" | wc -l) weekly retained"
