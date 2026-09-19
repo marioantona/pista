@@ -5,7 +5,11 @@ require_once 'oauth_config.php';
 $provider = isset($_GET['provider']) ? strtolower($_GET['provider']) : '';
 
 if (!array_key_exists($provider, $oauth_config)) {
-    die("Invalid OAuth provider.");
+    // Same failure path as oauth_callback.php: the user goes back to the sign-in
+    // modal with a generic message, the detail goes to the log (item 8).
+    error_log('OAuth handler called with an unknown provider');
+    header('Location: index.html?auth_error=oauth');
+    exit();
 }
 
 $config = $oauth_config[$provider];

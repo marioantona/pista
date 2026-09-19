@@ -13,18 +13,44 @@ require_once __DIR__ . '/session.php';
 require_once 'oauth_config.php';
 require_once 'configure.php'; // Assuming this holds your $conn / DB connection
 
+// Every failure below takes this path: a generic redirect for the user, the detail
+// for the operator. Until Phase 0B item 8 these were die() calls that printed
+// internals to the browser -- one of them the provider's whole token response,
+// which can carry an access token.
+//
+// What may be logged: the provider, an HTTP status, and the provider's own error
+// code. What may NEVER be logged: the response body, the access token or the
+// authorization code. The error log is the wrong place for a credential, and the
+// point of this item is that tokens stop travelling.
+function pista_oauth_fail(string $log_detail): void
+{
+    error_log('OAuth callback failed: ' . $log_detail);
+    header('Location: index.html?auth_error=oauth');
+    exit();
+}
+
 // Verify State to prevent CSRF
 if (!isset($_GET['state']) || !isset($_SESSION['oauth_state']) || $_GET['state'] !== $_SESSION['oauth_state']) {
-    die("Security check failed (CSRF). Please try logging in again.");
+    pista_oauth_fail('state mismatch (CSRF check)');
 }
 
 if (isset($_GET['error'])) {
-    die("OAuth Error: " . htmlspecialchars($_GET['error']));
+    // The provider's own error code, e.g. access_denied when the user cancels.
+    pista_oauth_fail('provider returned error=' . substr((string) $_GET['error'], 0, 100));
 }
 
-$provider = $_SESSION['oauth_provider'];
+// Both were read unguarded before item 8: a callback reaching this file without a
+// provider in the session, or without a code, produced warnings and a broken page.
+$provider = $_SESSION['oauth_provider'] ?? '';
+if (!is_string($provider) || !array_key_exists($provider, $oauth_config)) {
+    pista_oauth_fail('no valid provider in session');
+}
+
 $config = $oauth_config[$provider];
-$code = $_GET['code'];
+$code = isset($_GET['code']) && is_string($_GET['code']) ? $_GET['code'] : '';
+if ($code === '') {
+    pista_oauth_fail($provider . ': callback carried no authorization code');
+}
 
 // Exchange Authorization Code for Access Token
 $token_data = [
@@ -41,16 +67,25 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($token_data));
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true); 
 $token_response = curl_exec($ch);
-
-if(curl_errno($ch)){
-    die("cURL error during token exchange: " . curl_error($ch));
-}
+$token_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$token_curl_error = curl_errno($ch) ? curl_error($ch) : '';
 curl_close($ch);
 
-$token_json = json_decode($token_response, true);
+if ($token_curl_error !== '') {
+    pista_oauth_fail($provider . ' token exchange cURL error: ' . $token_curl_error);
+}
+
+$token_json = json_decode((string) $token_response, true);
 
 if (!isset($token_json['access_token'])) {
-    die("Failed to obtain access token. Response: " . htmlspecialchars($token_response));
+    // The provider's error CODE is safe and is what identifies the fault; the body
+    // is not, so it never appears here. The HTTP status alone usually says enough.
+    pista_oauth_fail(sprintf(
+        '%s token exchange returned no access_token (HTTP %d, error=%s)',
+        $provider,
+        $token_status,
+        is_array($token_json) ? substr((string) ($token_json['error'] ?? 'none'), 0, 100) : 'unparseable'
+    ));
 }
 
 $access_token = $token_json['access_token'];
@@ -63,9 +98,18 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Accept: application/json'
 ]);
 $profile_response = curl_exec($ch);
+$profile_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$profile_curl_error = curl_errno($ch) ? curl_error($ch) : '';
 curl_close($ch);
 
-$profile = json_decode($profile_response, true);
+if ($profile_curl_error !== '') {
+    pista_oauth_fail($provider . ' profile fetch cURL error: ' . $profile_curl_error);
+}
+
+$profile = json_decode((string) $profile_response, true);
+if (!is_array($profile)) {
+    pista_oauth_fail($provider . ' profile response was not JSON (HTTP ' . $profile_status . ')');
+}
 
 // Normalize data depending on provider
 $email = '';
@@ -90,7 +134,7 @@ if ($provider === 'google') {
 }
 
 if (empty($email)) {
-    die("Failed to retrieve email address from provider.");
+    pista_oauth_fail($provider . ' profile carried no email address (HTTP ' . $profile_status . ')');
 }
 
 // Database Transaction
@@ -127,12 +171,34 @@ if ($result->num_rows > 0) {
 } else {
     // New user. Register them.
     // Password is set to NULL (allowed by your schema.sql)
+    // mysqli throws under PHP 8.1+ defaults, so the old `else` here was dead code
+    // that would have printed $conn->error to the browser. Same shape as signup.php.
     $stmt = $conn->prepare("INSERT INTO users (fullname, email, password, oauth_provider, oauth_uid, profile_picture_url) VALUES (?, ?, NULL, ?, ?, ?)");
     $stmt->bind_param("sssss", $name, $email, $provider, $oauth_uid, $profile_picture_url);
-    if ($stmt->execute()) {
+    try {
+        $stmt->execute();
         $user_id = $stmt->insert_id;
-    } else {
-        die("Database error during registration: " . $conn->error);
+    } catch (mysqli_sql_exception $e) {
+        if ((int) $e->getCode() === 1062) {
+            // A concurrent callback created the account between the SELECT above and
+            // this INSERT. The row exists and is this same person, so log them in
+            // rather than failing a login that has already succeeded at the provider.
+            $retry = $conn->prepare("SELECT user_id, fullname FROM users WHERE email = ?");
+            $retry->bind_param("s", $email);
+            $retry->execute();
+            $existing = $retry->get_result()->fetch_assoc();
+            $retry->close();
+            if (!$existing) {
+                error_log('OAuth insert hit errno 1062 but no row found for that address');
+                pista_oauth_fail($provider . ': duplicate account race, row not found');
+            }
+            $user_id = $existing['user_id'];
+            $fullname = $existing['fullname'];
+        } else {
+            // Never echo the exception -- it carries the query and schema detail.
+            error_log('OAuth registration insert failed: ' . $e->getMessage());
+            pista_oauth_fail($provider . ': database error during registration');
+        }
     }
 }
 

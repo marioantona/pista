@@ -303,7 +303,30 @@ async function refreshCreditLine() {
     renderCreditLine()
 }
 
+// oauth_callback.php redirects here with ?auth_error=oauth when a sign-in fails.
+// It carries no detail by design -- the cause is in the server log (item 8).
+function showOAuthErrorIfAny() {
+    const params = new URLSearchParams(window.location.search)
+    if (!params.has("auth_error")) return
+
+    const modal = document.getElementById("auth-modal")
+    const errorEl = document.getElementById("modal-login-error")
+    if (modal) modal.style.display = "flex"
+    if (errorEl) {
+        errorEl.textContent = creditText("js-oauth-failed", "Sign-in failed. Please try again.")
+        errorEl.style.display = "block"
+    }
+
+    // Drop the parameter so a refresh, or a shared link, does not show it again.
+    params.delete("auth_error")
+    const query = params.toString()
+    history.replaceState(null, "", window.location.pathname + (query ? "?" + query : ""))
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    showOAuthErrorIfAny();
+    // Semicolon above is load-bearing: a line starting with [ after a call is
+    // parsed as member access, which node --check accepts and the browser breaks on.
     ["returnNumberOfDestinations", "returnDesiredDestinations"].forEach(id => {
         const el = document.getElementById(id)
         // "blur" matters: picking an airport from the autocomplete sets .value and
