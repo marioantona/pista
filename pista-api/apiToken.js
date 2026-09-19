@@ -142,4 +142,32 @@ function requireToken(scope) {
     }
 }
 
-module.exports = { requireToken, checkToken, bindEnforcing, _seen: seen }
+// ---------------------------------------------------------------------------
+// Refund receipts (Phase 0C, charge-on-success).
+//
+// PHP charges before the search, so a failed search has to be refunded. The
+// browser cannot be trusted to say "it failed" -- that would make every search
+// free -- and PHP never sees the outcome, because the browser talks to Node
+// directly. So Node, the only party that knows, signs a receipt:
+//
+//   v1.<jti>.<sub>.<cr>.<calls>.<base64url(HMAC-SHA256(secret, everything before))>
+//
+// The MAC makes it unforgeable without PISTA_API_SECRET; the jti ties it to the
+// one token that was paid for, and webroot/refund.php refuses a jti it has
+// already refunded. sub is carried so a receipt cannot be redeemed into someone
+// else's account, and calls records what the failure cost us.
+//
+// This is the mirror image of the token: PHP mints tokens and Node verifies them;
+// Node mints receipts and PHP verifies them. hash_equals() finally has a call
+// site on the PHP side.
+function signRefundReceipt({ jti, sub, cr, calls }) {
+    const secret = process.env.PISTA_API_SECRET
+    if (!secret || typeof jti !== 'string' || typeof sub !== 'string') return null
+    if (!Number.isInteger(cr) || cr < 1) return null
+
+    const body = `v1.${jti}.${sub}.${cr}.${Number.isInteger(calls) ? calls : 0}`
+    const mac = crypto.createHmac('sha256', secret).update(body).digest('base64url')
+    return `${body}.${mac}`
+}
+
+module.exports = { requireToken, checkToken, bindEnforcing, signRefundReceipt, _seen: seen }

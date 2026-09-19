@@ -9,6 +9,10 @@ const API_KEY = process.env.SERPAPI_KEY
 // on each call below: the callback is the success path, .catch is the error path.
 const { getJson } = require("serpapi")
 
+// Each wrapper reports its call to the request's counting scope, so a refund can
+// say what the failed search actually spent (callCounter.js, Phase 0C).
+const { countCall } = require('./callCounter')
+
 // SerpAPI rejects with the raw response body (a string), not an Error.
 function serpApiError(cause) {
     const text = typeof cause === 'string' ? cause : (cause && cause.message) || String(cause)
@@ -39,6 +43,7 @@ function fetchExploreDestinations(originAirportCode, outboundDate, region, curre
             children: children
         })
 
+        countCall()
         getJson(params, (data) => {
             if (data.error) {
                 return reject(new Error(`SerpAPI Error: ${data.error}`))
@@ -70,6 +75,7 @@ function fetchReturnFlight(originAirportCode, destinationAirportCode, outboundDa
             adults: adults,
             children: children
         })
+        countCall()
         getJson(params, (data) => {
             if (data.error) {
                 return reject(new Error(`SerpAPI Error: ${data.error}`))
@@ -109,6 +115,7 @@ function fetchBatchFlights(originsStr, destinationsStr, outboundDate, region, cu
             children: children
         })
 
+        countCall()
         getJson(params, (data) => {
             if (data.error) {
                 return reject(new Error(`SerpAPI Error: ${data.error}`))

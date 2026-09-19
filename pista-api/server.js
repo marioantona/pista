@@ -19,7 +19,8 @@ const cors = require('cors');
 // Import your brilliant routing engine!
 const { generateMultiCityItineraries } = require('./main'); 
 const { fetchReturnFlight } = require('./api');
-const { requireToken, bindEnforcing } = require('./apiToken');
+const { requireToken, bindEnforcing, signRefundReceipt } = require('./apiToken');
+const { withCallCount } = require('./callCounter');
 const { validateVerifyBody, validateSearchBody } = require('./requestLimits');
 
 const app = express();
@@ -51,6 +52,17 @@ app.use(cors({ origin: ['https://pistaflights.com'] }));
 // This tells Express to automatically parse incoming JSON data from the frontend
 app.use(express.json()); 
 
+// Every failure AFTER a valid token has been presented carries a refund receipt:
+// the credits were already charged by check_quota.php, and only this process knows
+// the search did not deliver. webroot/refund.php verifies the signature (Phase 0C).
+function failPaidSearch(req, res, status, error, calls) {
+    const paid = req.pistaToken || {};
+    const receipt = signRefundReceipt({ jti: paid.jti, sub: paid.sub, cr: paid.cr, calls });
+    const body = { success: false, error };
+    if (receipt) body.refund = receipt;
+    return res.status(status).json(body);
+}
+
 // BEAM SEARCH API Endpoint 
 // We use a POST request because the frontend is sending us a "payload" of complex search parameters
 // requireToken runs before any validation: no valid token, no work (RUNBOOK §17).
@@ -74,7 +86,7 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
         // how big the search is -- without these, numDestinations: 500 would run (item 7).
         const checked = validateSearchBody(req.body);
         if (!checked.ok) {
-            return res.status(400).json({ success: false, error: checked.error });
+            return failPaidSearch(req, res, 400, checked.error, 0);
         }
         // Deduplicated: each mandatory destination is priced separately in main.js.
         // region/currency come back normalised and defaulted, so no missing field
@@ -96,15 +108,16 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
                 : `paid n=${paid.n} d=${paid.d}, asked n=${numDestinations} d=${uniqueIncludes.length}`;
             if (bindEnforcing()) {
                 console.log(`[TOKEN] search ${unbound ? 'UNBOUND' : 'OVER-PAID-SIZE'} (rejected): ${detail}`);
-                return res.status(402).json({ success: false, error: 'This search is larger than the credits charged for it. Please search again.' });
+                return failPaidSearch(req, res, 402, 'This search is larger than the credits charged for it. Please search again.', 0);
             }
             console.log(`[TOKEN] search ${unbound ? 'UNBOUND' : 'MISMATCH'} (log-only): ${detail}`);
         }
 
         console.log(`[SERVER] Received search request for ${origin} starting ${startDate} for ${adults} Adults, ${children} Children`);
 
-        // 2. Hand the order to the Kitchen (Your Algorithm)
-        const itineraries = await generateMultiCityItineraries(
+        // 2. Hand the order to the Kitchen (Your Algorithm), inside a counting scope
+        // so a refund can report what the attempt actually spent.
+        const run = await withCallCount(() => generateMultiCityItineraries(
             origin, 
             startDate, 
             numDestinations, 
@@ -117,21 +130,29 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
             adults,
             children,
             travelRegion
-        );
+        ));
+
+        if (!run.ok) {
+            // An upstream outage is not the user's fault and must not be reported as
+            // "your constraints are too strict" -- main.js marks it (Phase 0C).
+            const upstream = run.error.message.startsWith('UPSTREAM_UNAVAILABLE');
+            const message = upstream
+                ? 'The flight data provider is not responding right now. Your credits have been returned — please try again shortly.'
+                : run.error.message;
+            console.error(`[SERVER ERROR] ${upstream ? 'upstream unavailable' : run.error.message} (calls spent: ${run.calls})`);
+            return failPaidSearch(req, res, upstream ? 503 : 500, message, run.calls);
+        }
 
         // 3. Serve the completed itineraries back to the user's browser!
         res.json({
             success: true,
-            results: itineraries
+            results: run.value
         });
 
     } catch (error) {
-        // If the algorithm throws an error (e.g., constraints too strict), catch it gracefully
+        // Anything the counting scope did not already turn into a response.
         console.error(`[SERVER ERROR]`, error.message);
-        res.status(500).json({ 
-            success: false, 
-            error: error.message 
-        });
+        return failPaidSearch(req, res, 500, error.message, 0);
     }
 });
 

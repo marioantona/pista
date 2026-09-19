@@ -98,6 +98,12 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
     
     const MIN_DISTANCE_KM = 100
 
+    // Set when a SerpAPI call itself fails, as opposed to returning nothing usable.
+    // An empty candidate pool then means "the provider is down", not "your
+    // constraints are too strict" -- the difference between our fault and the
+    // user's, and the difference between a refund and a lesson (Phase 0C).
+    let upstreamFailed = false
+
     //API CALL PREDICTOR & BEAM THROTTLE
     const maxBudget = 20
     const reservedForReturn = 6
@@ -296,6 +302,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                         }
                     } catch (error) {
                         console.error(`[EXPLORE API ERROR] SerpAPI failed: ${error.message}`)
+                        upstreamFailed = true
                         return [];
                     }
                 })();
@@ -335,6 +342,11 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         let nextCandidates = allCandidatesNested.flat(); // Flatten the arrays into one big pool
 
         if (nextCandidates.length === 0) {
+            // Two very different failures, told apart at last. The prefix is what
+            // server.js matches on to choose the message and the HTTP status.
+            if (upstreamFailed) {
+                throw new Error("UPSTREAM_UNAVAILABLE: the flight data provider did not answer, so no routes could be checked.");
+            }
             throw new Error("No valid routes found to continue the itinerary. Constraints may be too strict.");
         }
 
