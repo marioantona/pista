@@ -126,14 +126,27 @@ $node_response_raw = curl_exec($ch);
 $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
+// This endpoint calls Node itself, so it SEES the outcome and can give the credit
+// back directly -- no signed receipt and no refunds row, which exist only because
+// the search route's caller is the browser and cannot be believed (Phase 0C).
+$refund_verification = function (mysqli $conn, int $user_id, string $why): void {
+    error_log('Verification refunded 1 credit: ' . $why);
+    $back = $conn->prepare("UPDATE users SET credits_remaining = credits_remaining + 1 WHERE user_id = ?");
+    $back->bind_param("i", $user_id);
+    $back->execute();
+    $back->close();
+};
+
 if ($http_status !== 200 || !$node_response_raw) {
-    echo json_encode(['success' => false, 'error' => 'Failed to reach routing engine for verification.']);
+    $refund_verification($conn, $user_id, 'router unreachable (HTTP ' . $http_status . ')');
+    echo json_encode(['success' => false, 'error' => 'Failed to reach routing engine for verification. Your credit has been returned.']);
     exit;
 }
 
 $node_data = json_decode($node_response_raw, true);
 if (!is_array($node_data) || empty($node_data['success'])) {
-    echo json_encode(['success' => false, 'error' => $node_data['error'] ?? 'Verification failed.']);
+    $refund_verification($conn, $user_id, 'router reported failure');
+    echo json_encode(['success' => false, 'error' => ($node_data['error'] ?? 'Verification failed.') . ' Your credit has been returned.']);
     exit;
 }
 
@@ -141,8 +154,8 @@ if (!is_array($node_data) || empty($node_data['success'])) {
 $sent_ids = array_column($flights, 'flight_id');
 $verified_legs = $node_data['results'] ?? null;
 if (!is_array($verified_legs) || count($verified_legs) !== count($flights)) {
-    error_log('verify_itinerary.php: Node returned an unexpected result count for itinerary ' . $itinerary_id);
-    echo json_encode(['success' => false, 'error' => 'Verification failed.']);
+    $refund_verification($conn, $user_id, 'unexpected result count for itinerary ' . $itinerary_id);
+    echo json_encode(['success' => false, 'error' => 'Verification failed. Your credit has been returned.']);
     exit;
 }
 

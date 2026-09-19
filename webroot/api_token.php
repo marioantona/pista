@@ -60,5 +60,54 @@ if (!function_exists('pista_api_token')) {
 
         return $signing_input . '.' . pista_base64url($mac);
     }
+
+    // The mirror of the token: Node signs a refund receipt, PHP verifies it.
+    // Only this process may decide that a search failed -- the browser cannot be
+    // trusted to say so, or every search would be free (Phase 0C).
+    //
+    //   v1.<jti>.<sub>.<cr>.<calls>.<base64url(HMAC-SHA256(secret, body))>
+    //
+    // Returns the parsed claims, or null if anything at all is wrong. Comparison
+    // is hash_equals(): a plain === returns at the first differing byte and leaks
+    // how much of a forged MAC was right.
+    function pista_verify_refund_receipt(string $receipt): ?array
+    {
+        $parts = explode('.', $receipt);
+        if (count($parts) !== 6 || $parts[0] !== 'v1') {
+            return null;
+        }
+
+        [$version, $jti, $sub, $credits, $calls, $presented] = $parts;
+        $body = implode('.', [$version, $jti, $sub, $credits, $calls]);
+
+        // PISTA_API_SECRET_PREVIOUS exists only during a rotation (RUNBOOK §6).
+        $secrets = array_filter([
+            $_ENV['PISTA_API_SECRET'] ?? '',
+            $_ENV['PISTA_API_SECRET_PREVIOUS'] ?? '',
+        ]);
+
+        $valid = false;
+        foreach ($secrets as $secret) {
+            $expected = pista_base64url(hash_hmac('sha256', $body, $secret, true));
+            if (hash_equals($expected, $presented)) {
+                $valid = true;
+            }
+        }
+        if (!$valid) {
+            return null;
+        }
+
+        // Shape checks come after the MAC, never before: parse only what is signed.
+        if (!preg_match('/^[0-9a-f]{32}$/', $jti)) {
+            return null;
+        }
+        $credits = filter_var($credits, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 10]]);
+        $calls = filter_var($calls, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 100]]);
+        if ($credits === false || $calls === false) {
+            return null;
+        }
+
+        return ['jti' => $jti, 'sub' => $sub, 'credits' => $credits, 'calls' => $calls];
+    }
 }
 ?>

@@ -84,3 +84,20 @@ CREATE TABLE IF NOT EXISTS rate_limits (
     window_start TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_window_start (window_start)
 );
+
+-- refunds (Correctness) -- Phase 0C, charge-on-success
+-- One row per refunded search, so a signed failure receipt from Node can be
+-- redeemed exactly once: the jti IS the primary key, which is why the HMAC token
+-- has carried a jti since Phase 0B item 6.
+-- `subject` is 'u:<user_id>' or 'g:<sha256(ip)>', matching the token's sub, so a
+-- receipt cannot be redeemed into another account. The index on (subject,
+-- refunded_at) serves the monthly cap that bounds deliberately-failed searches.
+-- Created as root (sudo mysql) -- pista_user has no DDL.
+CREATE TABLE IF NOT EXISTS refunds (
+    jti CHAR(32) NOT NULL PRIMARY KEY,
+    subject VARCHAR(80) NOT NULL,
+    credits INT UNSIGNED NOT NULL,
+    calls_spent INT UNSIGNED NOT NULL DEFAULT 0,
+    refunded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_subject_time (subject, refunded_at)
+);

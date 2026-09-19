@@ -303,6 +303,29 @@ async function refreshCreditLine() {
     renderCreditLine()
 }
 
+// Redeem a failed search's refund receipt. The receipt is opaque here: it is
+// signed by Node and verified by refund.php, which is what stops a client simply
+// claiming that every search failed.
+async function claimRefund(receipt) {
+    try {
+        const res = await fetch("refund.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ receipt })
+        })
+        const data = await res.json()
+        if (data.success) {
+            creditBalance = data.remaining
+            renderCreditLine()
+            console.log(`Refunded ${data.refunded} credits; ${data.remaining} left`)
+        } else {
+            console.warn("Refund was not granted:", data.error)
+        }
+    } catch (e) {
+        console.error("Refund request failed", e)
+    }
+}
+
 // oauth_callback.php redirects here with ?auth_error=oauth when a sign-in fails.
 // It carries no detail by design -- the cause is in the server log (item 8).
 function showOAuthErrorIfAny() {
@@ -730,6 +753,9 @@ searchBtn.addEventListener('click', async () => {
             //triggers map animation
             animateItinerariesOnMap(data.results)
         } else {
+            // The credits were charged before the search ran. Node signs a receipt
+            // for a search that failed, which refund.php verifies -- see Phase 0C.
+            if (data.refund) await claimRefund(data.refund)
             resultsContainer.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`
         }
     } catch (error) {
