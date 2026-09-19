@@ -33,8 +33,21 @@ const PORT = 3000;
 // Check with: pm2 jlist  ->  "exec_mode": "fork_mode"
 
 // --- Middleware ---
-// CORS allows your web frontend (e.g., localhost:5173 or a live website) to make requests to this API
-app.use(cors()); 
+// CORS: a browser-enforced control, and nothing more. It stops another site's PAGE
+// from reading this API with a visitor's browser; it does nothing against curl or a
+// script, which is the X-PISTA-Token's job. Restricted in Phase 0B item 9.
+//
+// 🔴 The ARRAY form is deliberate: it allows a request with NO Origin header, which
+// is exactly what verify_itinerary.php's server-side cURL sends. A hand-written
+// `origin: (o, cb) => ...` that rejects undefined would break price verification --
+// silently, and only for logged-in users on the Saved Trips page (RUNBOOK §17).
+//
+// One entry, not two: Cloudflare 301s www to the apex before any page loads, so a
+// browser Origin is always https://pistaflights.com. If that redirect is ever
+// removed, https://www.pistaflights.com must be added here the same day.
+//
+// No `credentials: true` -- the browser→Node call carries no cookies.
+app.use(cors({ origin: ['https://pistaflights.com'] })); 
 // This tells Express to automatically parse incoming JSON data from the frontend
 app.use(express.json()); 
 
