@@ -70,21 +70,22 @@ app.post('/api/search-flights', requireToken('search'), async (req, res) => {
 
         // The token says what was PAID for. A search larger than that is refused,
         // otherwise a caller could pay for 1 destination and run 10 (RUNBOOK §12).
-        // Tokens minted before complexity pricing carry no n/d; they are accepted
-        // until TOKEN_BIND_ENFORCE is on, which is the rollout's rollback switch.
+        // A token with no n/d claims is refused too: check_quota.php has required the
+        // counts since 19 September 2026, so an unbound token can only be an old one
+        // replayed or a forgery. TOKEN_BIND_ENFORCE=false reverts to logging only.
         const paid = req.pistaToken || {};
-        const overPaid = (Number.isInteger(paid.n) && numDestinations > paid.n)
-            || (Number.isInteger(paid.d) && uniqueIncludes.length > paid.d);
         const unbound = !Number.isInteger(paid.n) || !Number.isInteger(paid.d);
+        const overPaid = !unbound
+            && (numDestinations > paid.n || uniqueIncludes.length > paid.d);
         if (overPaid || unbound) {
-            const detail = overPaid
-                ? `paid n=${paid.n} d=${paid.d}, asked n=${numDestinations} d=${uniqueIncludes.length}`
-                : 'token carries no size claims';
-            if (overPaid && bindEnforcing()) {
-                console.log(`[TOKEN] search OVER-PAID-SIZE (rejected): ${detail}`);
+            const detail = unbound
+                ? 'token carries no size claims'
+                : `paid n=${paid.n} d=${paid.d}, asked n=${numDestinations} d=${uniqueIncludes.length}`;
+            if (bindEnforcing()) {
+                console.log(`[TOKEN] search ${unbound ? 'UNBOUND' : 'OVER-PAID-SIZE'} (rejected): ${detail}`);
                 return res.status(402).json({ success: false, error: 'This search is larger than the credits charged for it. Please search again.' });
             }
-            console.log(`[TOKEN] search size ${overPaid ? 'MISMATCH' : 'UNBOUND'} (${bindEnforcing() ? 'allowed: unbound token' : 'log-only'}): ${detail}`);
+            console.log(`[TOKEN] search ${unbound ? 'UNBOUND' : 'MISMATCH'} (log-only): ${detail}`);
         }
 
         console.log(`[SERVER] Received search request for ${origin} starting ${startDate} for ${adults} Adults, ${children} Children`);

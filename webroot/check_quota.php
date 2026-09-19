@@ -16,33 +16,34 @@ if ($conn->connect_error) {
 // sends the shape, never the price: a client-supplied cost would be a free search.
 // A bigger search runs more SerpAPI calls (RUNBOOK §11), so it costs more credits.
 //
-// Older clients POST nothing, or GET. They still get the base price and a token
-// with no n/d claims, which Node accepts while TOKEN_BIND_ENFORCE is off. Remove
-// this fallback once the access log shows no client on the old script.
+// The shape is REQUIRED. Until 19 September 2026 a request without it was charged
+// the base price and given a token with no n/d claims, so that clients holding the
+// pre-pricing index.js kept working; that fallback is gone, and Node now refuses an
+// unbound token too. A request without the counts cannot be priced, so it is refused
+// here, before anything is charged.
 $input = json_decode(file_get_contents('php://input'), true);
-$bound = false;
-$n = 1;
-$d = 0;
 
-if (is_array($input) && isset($input['numDestinations'])) {
-    $n = filter_var($input['numDestinations'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 10]]);
-    $includes = isset($input['includeDestinations']) && is_array($input['includeDestinations'])
-        ? array_unique(array_filter($input['includeDestinations'], 'is_string'))
-        : [];
-    $d = count($includes);
+if (!is_array($input) || !isset($input['numDestinations'])) {
+    echo json_encode(['success' => false, 'error' => 'Invalid search parameters.']);
+    exit;
+}
 
-    // The same bounds Node enforces (pista-api/requestLimits.js). Refused here the
-    // request costs nothing; refused there it has already been charged.
-    if ($n === false || $d > $n) {
-        echo json_encode(['success' => false, 'error' => 'Invalid search parameters.']);
-        exit;
-    }
-    $bound = true;
+$n = filter_var($input['numDestinations'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 10]]);
+$includes = isset($input['includeDestinations']) && is_array($input['includeDestinations'])
+    ? array_unique(array_filter($input['includeDestinations'], 'is_string'))
+    : [];
+$d = count($includes);
+
+// The same bounds Node enforces (pista-api/requestLimits.js). Refused here the
+// request costs nothing; refused there it has already been charged.
+if ($n === false || $d > $n) {
+    echo json_encode(['success' => false, 'error' => 'Invalid search parameters.']);
+    exit;
 }
 
 $cost = pista_search_cost($n, $d);
 $search_cost = $cost['credits'];
-$claims = $bound ? ['n' => $n, 'd' => $d, 'cr' => $search_cost] : ['cr' => $search_cost];
+$claims = ['n' => $n, 'd' => $d, 'cr' => $search_cost];
 
 // Registered user logic
 if (isset($_SESSION['user_id'])) {
