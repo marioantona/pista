@@ -7,10 +7,8 @@ require_once __DIR__ . '/client_ip.php';
 require_once __DIR__ . '/api_token.php';
 require_once __DIR__ . '/search_cost.php';
 
-if ($conn->connect_error) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
-    exit;
-}
+// configure.php die()s on a failed connection before this file resumes, so the
+// old `if ($conn->connect_error)` block here was unreachable (Phase 0C).
 
 // What this search costs, computed HERE from the shape of the search. The browser
 // sends the shape, never the price: a client-supplied cost would be a free search.
@@ -49,35 +47,36 @@ $claims = ['n' => $n, 'd' => $d, 'cr' => $search_cost];
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
-    //check currenct quota
+    // Check and deduct in ONE statement. The old SELECT-then-UPDATE let two
+    // parallel searches both read the same balance, both pass the check and both
+    // charge -- the quota race in RUNBOOK §12. The condition lives in the WHERE
+    // clause, so the database decides, and affected_rows says whether it happened.
+    $charge = $conn->prepare("UPDATE users SET credits_remaining = credits_remaining - ? WHERE user_id = ? AND credits_remaining >= ?");
+    $charge->bind_param("iii", $search_cost, $user_id, $search_cost);
+    $charge->execute();
+    $charged = $charge->affected_rows === 1;
+    $charge->close();
+
     $stmt = $conn->prepare("SELECT credits_remaining FROM users WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) {
-        if ($row['credits_remaining'] >= $search_cost) {
-            // Success! Deduct this search's price from the database
-            $new_quota = $row['credits_remaining'] - $search_cost;
-            $update = $conn->prepare("UPDATE users SET credits_remaining = ? WHERE user_id = ?");
-            $update->bind_param("ii", $new_quota, $user_id);
-            $update->execute();
-
-            // The credits are charged; the token is what lets Node run the search,
-            // and its n/d claims cap how big that search may be.
-            echo json_encode([
-                'success' => true, 'remaining' => $new_quota, 'type' => 'registered',
-                'cost' => $search_cost, 'calls' => $cost['calls'],
-                'token' => pista_api_token('search', 'u:' . $user_id, $claims),
-            ]);
-        } else {
-            // Out of quota
-            echo json_encode(['success' => false, 'error' => 'This search costs ' . $search_cost . ' credits. You have ' . $row['credits_remaining'] . ' remaining. Quotas reset on the 1st of the month.']);
-        }
-    } else {
-        echo json_encode(['success' => false, 'error' => 'User account not found.']);
-    }
+    $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+
+    if (!$row) {
+        echo json_encode(['success' => false, 'error' => 'User account not found.']);
+    } elseif (!$charged) {
+        // Not charged and the account exists: they cannot afford this search.
+        echo json_encode(['success' => false, 'error' => 'This search costs ' . $search_cost . ' credits. You have ' . $row['credits_remaining'] . ' remaining. Quotas reset on the 1st of the month.']);
+    } else {
+        // The credits are charged; the token is what lets Node run the search,
+        // and its n/d claims cap how big that search may be.
+        echo json_encode([
+            'success' => true, 'remaining' => (int) $row['credits_remaining'], 'type' => 'registered',
+            'cost' => $search_cost, 'calls' => $cost['calls'],
+            'token' => pista_api_token('search', 'u:' . $user_id, $claims),
+        ]);
+    }
 }
 // GUEST USER LOGIC (IP TRACKING)
 else {
@@ -86,19 +85,49 @@ else {
     $guest_ip = pista_client_ip();
     $max_guest_credits = 2; // Limit guests to exactly 1 basic search
 
-    //Check if this IP has searched before
-    $stmt = $conn->prepare('SELECT credits_remaining FROM guest_usage WHERE ip_address = ?');
-    $stmt->bind_param('s', $guest_ip);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
+    // Same atomic deduction as the registered branch. The guest path has an extra
+    // case -- the row may not exist yet -- so: try the conditional UPDATE, and only
+    // if it changes nothing work out whether that is "no row" or "cannot afford".
+    $charge = $conn->prepare('UPDATE guest_usage SET credits_remaining = credits_remaining - ? WHERE ip_address = ? AND credits_remaining >= ?');
+    $charge->bind_param('isi', $search_cost, $guest_ip, $search_cost);
+    $charge->execute();
+    $charged = $charge->affected_rows === 1;
+    $charge->close();
 
-    // A guest starts with exactly the base price, so any search that costs more is
-    // out of reach however many rows exist. Say so plainly instead of "limit reached".
-    $guest_credits = $row ? (int) $row['credits_remaining'] : $max_guest_credits;
+    if (!$charged) {
+        $stmt = $conn->prepare('SELECT credits_remaining FROM guest_usage WHERE ip_address = ?');
+        $stmt->bind_param('s', $guest_ip);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-    if ($guest_credits < $search_cost) {
+        if (!$row && $max_guest_credits >= $search_cost) {
+            // First search from this address. Two parallel first searches both reach
+            // here, so the PRIMARY KEY is the arbiter: the loser catches 1062 and
+            // retries the conditional UPDATE, which then charges exactly once.
+            $initial = $max_guest_credits - $search_cost;
+            try {
+                $insert = $conn->prepare("INSERT INTO guest_usage (ip_address, credits_remaining) VALUES (?, ?)");
+                $insert->bind_param("si", $guest_ip, $initial);
+                $insert->execute();
+                $insert->close();
+                $charged = true;
+            } catch (mysqli_sql_exception $e) {
+                if ((int) $e->getCode() !== 1062) {
+                    throw $e;
+                }
+                $retry = $conn->prepare('UPDATE guest_usage SET credits_remaining = credits_remaining - ? WHERE ip_address = ? AND credits_remaining >= ?');
+                $retry->bind_param('isi', $search_cost, $guest_ip, $search_cost);
+                $retry->execute();
+                $charged = $retry->affected_rows === 1;
+                $retry->close();
+            }
+        }
+    }
+
+    if (!$charged) {
+        // A guest starts with exactly the base price, so any search that costs more is
+        // out of reach however many rows exist. Say so plainly instead of "limit reached".
         $error = $search_cost > $max_guest_credits
             ? 'This search costs ' . $search_cost . ' credits because of its size. Guests get ' . $max_guest_credits . '. Log in or sign up for 10 free monthly credits.'
             : 'Free trial limit reached! Please Log In or Sign Up to receive 10 free monthly credits.';
@@ -107,20 +136,14 @@ else {
         exit;
     }
 
-    $new_quota = $guest_credits - $search_cost;
-    if ($row) {
-        $update = $conn->prepare('UPDATE guest_usage SET credits_remaining = ? WHERE ip_address = ?');
-        $update->bind_param('is', $new_quota, $guest_ip);
-        $update->execute();
-    } else {
-        //Set up new IP. Create a record with (Default - Cost)
-        $insert = $conn->prepare("INSERT INTO guest_usage (ip_address, credits_remaining) VALUES (?, ?)");
-        $insert->bind_param("si", $guest_ip, $new_quota);
-        $insert->execute();
-    }
+    $stmt = $conn->prepare('SELECT credits_remaining FROM guest_usage WHERE ip_address = ?');
+    $stmt->bind_param('s', $guest_ip);
+    $stmt->execute();
+    $remaining = (int) ($stmt->get_result()->fetch_assoc()['credits_remaining'] ?? 0);
+    $stmt->close();
 
     echo json_encode([
-        'success' => true, 'remaining' => $new_quota, 'type' => 'guest',
+        'success' => true, 'remaining' => $remaining, 'type' => 'guest',
         'cost' => $search_cost, 'calls' => $cost['calls'],
         'token' => pista_api_token('search', 'g:' . hash('sha256', $guest_ip), $claims),
     ]);

@@ -27,10 +27,8 @@ if ($itinerary_id === false) {
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/api_token.php';
 
-if ($conn->connect_error) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
-    exit;
-}
+// configure.php die()s on a failed connection before this file resumes, so the
+// old `if ($conn->connect_error)` block here was unreachable (Phase 0C).
 
 // Security Check - Ensure the itinerary belongs to this user
 $check_stmt = $conn->prepare("SELECT currency, adults, children FROM itineraries WHERE itinerary_id = ? AND user_id = ?");
@@ -85,22 +83,25 @@ if ($pref && is_string($pref['region']) && preg_match('/^[a-z]{2}$/', $pref['reg
 // The trip's own currency, so verified prices are stored in the unit the row declares.
 $currency = strtoupper((string) $itinerary['currency']);
 
-// Check and deduct Quota (1 credit for price verification)
-$stmt = $conn->prepare("SELECT credits_remaining FROM users WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$row = $result->fetch_assoc();
+// Check and deduct Quota (1 credit for price verification), in one statement:
+// the balance check lives in the WHERE clause so two parallel verifications
+// cannot both pass it and both charge (the quota race, RUNBOOK §12).
+$charge = $conn->prepare("UPDATE users SET credits_remaining = credits_remaining - 1 WHERE user_id = ? AND credits_remaining >= 1");
+$charge->bind_param("i", $user_id);
+$charge->execute();
+$charged = $charge->affected_rows === 1;
+$charge->close();
 
-if (!$row || $row['credits_remaining'] < 1) {
+if (!$charged) {
     echo json_encode(['success' => false, 'error' => 'Insufficient search credits to verify this trip.']);
     exit;
 }
 
-$new_quota = $row['credits_remaining'] - 1;
-$update_quota = $conn->prepare("UPDATE users SET credits_remaining = ? WHERE user_id = ?");
-$update_quota->bind_param("ii", $new_quota, $user_id);
-$update_quota->execute();
+$quota_stmt = $conn->prepare("SELECT credits_remaining FROM users WHERE user_id = ?");
+$quota_stmt->bind_param("i", $user_id);
+$quota_stmt->execute();
+$new_quota = (int) ($quota_stmt->get_result()->fetch_assoc()['credits_remaining'] ?? 0);
+$quota_stmt->close();
 
 // Call the Node.js Backend
 $node_url = 'http://localhost:3000/api/verify-itinerary';
