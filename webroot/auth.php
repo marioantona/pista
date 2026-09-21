@@ -57,6 +57,19 @@ if (!function_exists('pista_current_user')) {
                 return null;
             }
 
+            // A session the user did not ask to be remembered dies on idleness,
+            // because the browser cannot be trusted to end it: Chrome and Firefox
+            // restore session cookies across a restart, which made an unticked
+            // login look like a remembered one. A remembered session needs no
+            // timeout -- its token re-establishes it, re-checking revocation.
+            $remembered = !empty($_SESSION['remembered']);
+            $seen_at = isset($_SESSION['seen_at']) ? (int) $_SESSION['seen_at'] : $auth_at;
+            if (!$remembered && (time() - $seen_at) > PISTA_SESSION_IDLE_SECONDS) {
+                pista_destroy_session();
+                return null;
+            }
+            $_SESSION['seen_at'] = time();
+
             return $user_id;
         }
 
@@ -183,8 +196,7 @@ if (!function_exists('pista_current_user')) {
         // A new session ID: resuming is a privilege change like any other login,
         // so the same fixation defence applies.
         session_regenerate_id(true);
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['auth_at'] = time();
+        pista_mark_authenticated($user_id, true);
 
         // Rotate at most once per window, and never on a grace-window request --
         // that browser already holds the newer cookie.
@@ -255,10 +267,14 @@ if (!function_exists('pista_current_user')) {
     // Record an authentication. Called by login.php, signup.php and
     // oauth_callback.php, next to their session_regenerate_id(true).
     // -----------------------------------------------------------------------
-    function pista_mark_authenticated(int $user_id): void
+    // $remembered: the user ticked the box, or arrived through a provider (which
+    // issues a token of its own). It decides whether the session may sit idle.
+    function pista_mark_authenticated(int $user_id, bool $remembered = false): void
     {
         $_SESSION['user_id'] = $user_id;
         $_SESSION['auth_at'] = time();
+        $_SESSION['seen_at'] = time();
+        $_SESSION['remembered'] = $remembered;
     }
 }
 ?>

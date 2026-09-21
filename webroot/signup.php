@@ -141,7 +141,9 @@ $new_user_id = $stmt->insert_id;
 // Session fixation defence -- see login.php
 session_regenerate_id(true);
 
-pista_mark_authenticated($new_user_id);
+// A new signup has no "remember me" box, so its session behaves like an unticked
+// login: it dies after PISTA_SESSION_IDLE_SECONDS of silence.
+pista_mark_authenticated($new_user_id, false);
 
 // Can edit the amount of time that the cookie is valid for in seconds
 $cookie_time = time() + (86400 * 3);

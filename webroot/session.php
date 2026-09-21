@@ -106,6 +106,17 @@ if (!defined('PISTA_REMEMBER_COOKIE')) {
     // grace window a concurrent request would look like a stolen cookie.
     define('PISTA_REMEMBER_ROTATE_SECONDS', 60);
     define('PISTA_REMEMBER_GRACE_SECONDS', 120);
+
+    // How long a session that was NOT "remembered" survives without a request.
+    //
+    // PHPSESSID is a browser-session cookie (lifetime 0 above), but that only
+    // binds it to the browser's idea of a session -- and Chrome and Firefox
+    // RESTORE session cookies when they reopen tabs, so an unticked login could
+    // outlive a browser restart. A restart is undetectable server-side; an idle
+    // window is not. 30 minutes matches what PHP's own cleaner enforces
+    // (gc_maxlifetime 1440 s, phpsessionclean every 30 min), so this makes the
+    // existing behaviour deterministic and ours rather than incidental.
+    define('PISTA_SESSION_IDLE_SECONDS', 1800);
 }
 
 if (!function_exists('pista_set_remember_cookie')) {

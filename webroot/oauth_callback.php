@@ -247,7 +247,9 @@ session_regenerate_id(true);
 // from passing the CSRF check a second time.
 unset($_SESSION['oauth_state']);
 
-pista_mark_authenticated($user_id);
+// OAuth logins are remembered by decision: there is no checkbox on this path and
+// re-consent is usually one silent click, so they get the 30-day token below.
+pista_mark_authenticated($user_id, true);
 
 $pref_stmt = $conn->prepare("SELECT region, unit, currency FROM preferences WHERE user_id = ?");
 $pref_stmt->bind_param("i", $user_id);

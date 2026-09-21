@@ -135,8 +135,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             //echo ("Successful login");
             // Records WHEN this session authenticated, which is what a password
-            // reset later invalidates against (auth.php, Phase 0C).
-            pista_mark_authenticated($user_id);
+            // reset later invalidates against, and whether it may sit idle
+            // (auth.php, Phase 0C).
+            $remember_me = isset($_POST["remember"]);
+            pista_mark_authenticated($user_id, $remember_me);
             // Displaying the name 
             $namestmt = $conn->prepare("SELECT fullname FROM users WHERE user_id = ?");
             $namestmt->bind_param("i", $user_id);
@@ -176,8 +178,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // the session after the browser closes. Before Phase 0C it only
             // stretched the convenience cookies, so a returning visitor was
             // greeted by name and then treated as a guest.
-            if (isset($_POST["remember"])) {
+            if ($remember_me) {
                 pista_issue_remember_token($conn, $user_id);
+            } else {
+                // Leaving the box unticked must UNDO a previous "remember me" on
+                // this device -- including the one an OAuth login mints. Otherwise
+                // a hybrid account signing in with its password would stay signed
+                // in across a restart and the checkbox would look ignored.
+                pista_revoke_remember_token($conn);
             }
 
             // Calculate cookie expiration based on "Remember Me" - if true valid for 30 days otherwise 1 day
