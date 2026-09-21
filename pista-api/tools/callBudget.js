@@ -35,6 +35,9 @@ const RESERVED_FOR_RETURN = 6
 
 // A region whose countries and hubs both exist in main.js's tables.
 const TEST_REGION = 'north_america'
+// main.js does not export regionHubs, so the one list this harness needs is mirrored.
+// If they ever disagree the overlap mode simply tests less, never more.
+const regionHubs = { north_america: ['JFK', 'LAX', 'YYZ', 'MEX', 'ORD', 'ATL', 'YVR'] }
 const TEST_COUNTRY = 'United States'
 const ORIGIN = 'LHR'
 
@@ -43,6 +46,18 @@ const ORIGIN = 'LHR'
 const EXPLORE_CODES = Array.from({ length: 40 }, (_, i) => `X${String(i).padStart(2, '0')}`)
 // Mandatory destinations: real codes in TEST_REGION, none of them regionHubs entries.
 const MANDATORY_POOL = ['SFO', 'SEA', 'BOS', 'MIA', 'DEN', 'PHX', 'IAD', 'SAN', 'AUS', 'MSP']
+
+// ...which is exactly the case this harness could not see. Because no mandatory code
+// was ever a hub, the hop-0 overlap between the hub batch and the mandatory-destination
+// calls was never exercised -- and that overlap was both a wasted call and the source
+// of duplicate itineraries (Phase 0C session 4, tools/searchQuality.js). The third
+// mode below draws mandatory destinations from the region's OWN hubs, maximising the
+// overlap, and asserts the same formula still bounds it.
+const HUB_POOL = [...regionHubs[TEST_REGION], ...MANDATORY_POOL]
+
+// Mandatory destinations must stay expensive whichever pool they came from, or the
+// beam takes one early and the expensive tail never happens.
+let currentMandatory = new Set()
 
 let counts = { explore: 0, single: 0, batch: 0 }
 const total = () => counts.explore + counts.single + counts.batch
@@ -67,7 +82,7 @@ api.fetchExploreDestinations = async () => {
 api.fetchReturnFlight = async (_from, to) => {
     counts.single++
     // Mandatory destinations are expensive, so the beam never takes one early.
-    const price = MANDATORY_POOL.includes(to) ? 100000 : 200
+    const price = currentMandatory.has(to) ? 100000 : 200
     return { price, airline: 'TestAir', airline_logo: '' }
 }
 
@@ -97,12 +112,14 @@ function formula(n, d, withRegion) {
     return c0 + W * (hops - c0) + hubRepair + 1 + W
 }
 
-async function run(n, d, withRegion) {
+async function run(n, d, mode) {
     counts = { explore: 0, single: 0, batch: 0 }
-    const includeDestinations = MANDATORY_POOL.slice(0, d)
+    const pool = mode === 'hubOverlap' ? HUB_POOL : MANDATORY_POOL
+    const includeDestinations = pool.slice(0, d)
+    currentMandatory = new Set(includeDestinations)
     await generateMultiCityItineraries(
         ORIGIN, '2026-10-01', n, 3, [], includeDestinations, false,
-        'uk', 'GBP', 1, 0, withRegion ? TEST_REGION : 'any'
+        'uk', 'GBP', 1, 0, mode === 'any' ? 'any' : TEST_REGION
     )
     return total()
 }
@@ -113,30 +130,31 @@ async function run(n, d, withRegion) {
     let violations = 0
     let worst = { calls: 0 }
 
-    for (const withRegion of [false, true]) {
+    for (const mode of ['any', 'region', 'hubOverlap']) {
+        const withRegion = mode !== 'any'
         for (let n = 1; n <= MAX_DESTINATIONS; n++) {
             for (let d = 0; d <= n; d++) {
-                const measured = await run(n, d, withRegion)
+                const measured = await run(n, d, mode)
                 const bound = formula(n, d, withRegion)
                 const ok = measured <= bound
                 if (!ok) violations++
-                if (measured > worst.calls) worst = { calls: measured, n, d, withRegion }
-                rows.push({ n, d, withRegion, measured, bound, W: beamWidth(n, d), ok })
+                if (measured > worst.calls) worst = { calls: measured, n, d, mode }
+                rows.push({ n, d, mode, withRegion, measured, bound, W: beamWidth(n, d), ok })
             }
         }
     }
 
     const show = verbose ? rows : rows.filter(r => !r.ok || r.measured >= 20)
-    console.log('region  N   d   W  measured  formula  ok')
+    console.log('mode            N   d   W  measured  formula  ok')
     for (const r of show) {
         console.log(
-            `${(r.withRegion ? TEST_REGION : 'any').padEnd(14)} ${String(r.n).padStart(2)}  ${String(r.d).padStart(2)}  ${r.W}  ${String(r.measured).padStart(8)}  ${String(r.bound).padStart(7)}  ${r.ok ? 'yes' : 'NO'}`
+            `${r.mode.padEnd(14)} ${String(r.n).padStart(2)}  ${String(r.d).padStart(2)}  ${r.W}  ${String(r.measured).padStart(8)}  ${String(r.bound).padStart(7)}  ${r.ok ? 'yes' : 'NO'}`
         )
     }
     if (!verbose) console.log('(rows with fewer than 20 calls hidden; --verbose shows all)')
 
     console.log(`\n${rows.length} combinations, ${violations} over the formula.`)
-    console.log(`Worst measured: ${worst.calls} calls at N=${worst.n}, d=${worst.d}, region=${worst.withRegion ? TEST_REGION : 'any'}.`)
+    console.log(`Worst measured: ${worst.calls} calls at N=${worst.n}, d=${worst.d}, mode=${worst.mode}.`)
 
     // Does an in-budget search (the predictor thinks it fits) ever exceed 20?
     const overTwenty = rows.filter(r => beamWidth(r.n, r.d) > 0 && r.measured > MAX_BUDGET
