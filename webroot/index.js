@@ -1351,6 +1351,7 @@ function renderFlightData(itineraries, containerId) {
             if (!isSaved) {
                 // SAVE ACTION
                 if (auth.logged_in) {
+                    let stored = false
                     const res = await fetch("add_itinerary.php", {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json'},
@@ -1358,8 +1359,22 @@ function renderFlightData(itineraries, containerId) {
                     })
                     try {
                         const parsed = await res.json()
-                        if (parsed.success && parsed.itinerary_id) { savedDbId = parsed.itinerary_id }
+                        if (parsed.success && parsed.itinerary_id) {
+                            savedDbId = parsed.itinerary_id
+                            stored = true
+                        } else {
+                            console.error("Save refused:", parsed.error)
+                        }
                     } catch(err) { console.error("Failed to parse save response", err)}
+
+                    // add_itinerary.php now refuses a malformed trip instead of
+                    // mangling it into the columns, so the button has to tell the
+                    // truth: flipping to "Unsave" over a refusal is how a trip
+                    // silently disappears.
+                    if (!stored) {
+                        saveBtn.disabled = false
+                        return
+                    }
                 } else {
                     let guestTrips = JSON.parse(localStorage.getItem("pista_guest_trips")) || []
                     savedGuestId = "guest_" + Date.now()
