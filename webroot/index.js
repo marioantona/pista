@@ -362,11 +362,41 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshCreditLine()
 })
 
+// The four fields the -/+ buttons drive. Kept in one place so the type switch
+// below and stepInput() cannot drift apart from the markup.
+const STEPPER_FIELD_IDS = ["returnNumberOfDestinations", "returnDaysPerDestination", "returnAdult", "returnChild"]
+
+// Native spin arrows next to our own -/+ buttons are redundant, and index.css
+// cannot remove them: its old rules selected the custom element, while the real
+// <input> is inside MWC's shadow DOM. Dropping type="number" is the only reliable
+// way, so it is dropped -- but ONLY where the arrows are actually drawn AND
+// something else can step the value.
+//
+// Width alone is the wrong test. A narrow desktop window and a phone are not the
+// same thing: type="number" is what gives a phone its numeric keypad, and a phone
+// draws no spinners anyway, so switching on width would take the keypad away to
+// fix nothing. (pointer: fine) means a mouse, i.e. the case with spinners and no
+// soft keyboard. The 768px half matches the breakpoint that reveals .stepper-btn,
+// because above it those arrows are the only way to step a value at all.
+const compactPointer = window.matchMedia("(max-width: 768px) and (pointer: fine)")
+
+function syncStepperInputType(useText) {
+    STEPPER_FIELD_IDS.forEach(id => {
+        const field = document.getElementById(id)
+        if (field) field.type = useText ? "text" : "number"
+    })
+}
+
+syncStepperInputType(compactPointer.matches)
+compactPointer.addEventListener("change", e => syncStepperInputType(e.matches))
+
 window.stepInput = function(id, delta) {
     const input = document.getElementById(id)
     let val = parseInt(input.value) || 0
-    const min = parseInt(input.min) || 0
-    const max = parseInt(input.max) || 99
+    // Read the ATTRIBUTES, not the properties: min/max are only mirrored onto a
+    // number-typed input, and the field above may now be type="text".
+    const min = parseInt(input.getAttribute("min")) || 0
+    const max = parseInt(input.getAttribute("max")) || 99
 
     val += delta
     if (val >= min && val <= max) {

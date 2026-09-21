@@ -646,16 +646,14 @@ html, body {
         display: inline-flex;
     }
 
-    /* hide native browser up/down arrows on mobile to prevent redundancy */
-    md-outlined-text-field[type="number"] {
-        -moz-appearance: textfield; /* Firefox */
-    }
-
-    md-outlined-text-field[type="number"]::-webkit-inner-spin-button,
-    md-outlined-text-field[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none; /* Chrome/Safari */
-        margin: 0;
-    }
+    /* The rules that used to sit here tried to hide the native up/down arrows with
+       -moz-appearance and ::-webkit-*-spin-button. They never worked, and cannot:
+       they select the CUSTOM ELEMENT, while the real <input> lives inside MWC's
+       shadow DOM, which plain CSS cannot reach and `appearance` does not inherit
+       into. Chrome on Android draws no spinners anyway, which is what made them
+       look effective. index.js drops type="number" instead, and only where the
+       arrows are both drawn and redundant -- see syncStepperInputType()
+       (Phase 0D session 4). */
 }
 
 /* Below 768px there was nothing at all until Phase 0D session 2, and the top nav
@@ -731,8 +729,16 @@ html, body {
    sits after the block above so it wins wherever they overlap. */
 @media (orientation: landscape) and (max-height: 500px) {
     .card {
-        top: 70px;
-        max-height: calc(100dvh - 86px);
+        /* No `top` here. Session 3 set 70px, which put the card 2px ABOVE the nav's
+           bottom edge -- .top-nav sits at top: 16px and .circle is 56px tall, so
+           that edge is at 72px and the desktop rule's 85px is what leaves a 13px
+           gap. Take the room out of the height instead, which is the point: the
+           card gets shorter, the margin stays.
+           101px = the 85px offset + 16px of breathing room at the bottom. Correct
+           from either end: above 768px wide the card is top-anchored at 85px and
+           stops 16px short of the bottom; at or below it the mobile block anchors
+           bottom: 16px and this height puts the top edge back at 85px. */
+        max-height: calc(100dvh - 101px);
         overflow-y: auto;
     }
 }
