@@ -17,16 +17,23 @@
 </head>
 <body>
     <aside>
-        <div class="sidebar-logo">
-            <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />    
+        <!-- Logo and Back share one wrapper so the mobile rule can lay them out as a
+             row: Back on the left, brand on the right, instead of stacking two lines
+             (Phase 0D session 3). On desktop .sidebar-top is a column and this looks
+             exactly as it did. Back has to live outside the list below because CSS
+             cannot lift one item out of it. -->
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />    
+            </div>
+            <md-list class="sidebar-back">
+                <md-list-item type="button" href="index.html" data-target="backtosearch">
+                    <span slot="start" class="material-symbols-outlined">arrow_back</span>
+                    <div slot="headline" data-i18n="nav-back">Back</div>
+                </md-list-item>
+            </md-list>
         </div>
         <md-list style="flex-grow: 1;">
-            <md-list-item type="button" href="index.html" data-target="backtosearch">
-                <span slot="start" class="material-symbols-outlined">arrow_back</span>
-                <div slot="headline" data-i18n="nav-back">Back</div>
-            </md-list-item>
-            <md-divider></md-divider>
-
             <md-list-item type="button" data-target="account-details">
                 <span slot="start" class="material-symbols-outlined">person</span>
                 <div slot="headline" data-i18n="nav-account">My Account</div>

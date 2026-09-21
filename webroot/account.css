@@ -351,6 +351,14 @@ md-filled-text-field, md-outlined-select {
     display: block;
 }
 
+/* Both sidebars wrap their logo and Back item in .sidebar-top so the mobile rule
+   can turn that pair into a row. On desktop it is a plain column and the sidebar
+   looks exactly as it always did (Phase 0D session 3). */
+.sidebar-top {
+    display: flex;
+    flex-direction: column;
+}
+
 .sidebar-logo {
     display: flex;
     align-items: center;
@@ -455,6 +463,26 @@ md-filled-text-field, md-outlined-select {
         width: auto;
         margin: 16px 16px 0 16px;
         padding: 12px;
+    }
+
+    /* Back on the left, brand on the right, on ONE line -- they used to stack and
+       waste a row. row-reverse rather than an order property: the DOM is
+       logo-then-list on both pages, so reversing puts Back first without
+       reordering the markup. Both pages carry the same .sidebar-top wrapper, which
+       is why this is one rule and not a page-specific override
+       (Phase 0D session 3). */
+    .sidebar-top {
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sidebar-logo {
+        padding: 0 4px;
+    }
+
+    .sidebar-back {
+        padding: 0;
     }
 
     /* turn the sidebar list into a horizontal scrollable menu */

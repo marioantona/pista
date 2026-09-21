@@ -17,15 +17,19 @@
 </head>
 <body>
     <aside>
-        <div class="sidebar-logo">
-            <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />
+        <!-- Same .sidebar-top wrapper as account.html, so one rule lays both pages
+             out as Back-left / brand-right on a phone (Phase 0D session 3). -->
+        <div class="sidebar-top">
+            <div class="sidebar-logo">
+                <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" />
+            </div>
+            <md-list class="sidebar-back">
+                <md-list-item type="button" href="index.html">
+                    <span slot="start" class="material-symbols-outlined">arrow_back</span>
+                    <div slot="headline" data-i18n="nav-back">Back</div>
+                </md-list-item>
+            </md-list>
         </div>
-        <md-list>
-            <md-list-item type="button" href="index.html">
-                <span slot="start" class="material-symbols-outlined">arrow_back</span>
-                <div slot="headline" data-i18n="nav-back">Back</div>
-            </md-list-item>
-        </md-list>    
     </aside>
 
     <main style="padding-top: 40px;">
