@@ -149,8 +149,11 @@ html, body {
     fill: #CAC4D0;
 }
 
-/* dark mode: auth card logo img sizing */
-.auth-card .logo img[data-pista-logo] {
+/* Auth card logo sizing. Keyed on the element, not on data-pista-logo: these
+   cards are fixed dark (background: rgba(20,16,30,0.95); color: white) with no
+   theme-aware override, so their logo must always be the light-on-dark variant
+   and must NOT carry that attribute -- see RUNBOOK §10. */
+.auth-card .logo img {
     height: 48px;
     width: auto;
     max-width: 280px;
