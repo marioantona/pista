@@ -186,8 +186,13 @@ html, body {
 }
 
 /* --- Layout Components --- */
+/* fixed, not absolute. The page is taller than the viewport -- #map is 100% high
+   and the <footer> follows it in normal flow -- so an absolutely positioned
+   overlay scrolls away with the document, and scrolling down to reach the footer
+   used to hide the nav and the search card entirely. Both are overlays ON a
+   full-screen map, which is what fixed means (Phase 0D session 3). */
 .top-nav {
-    position: absolute;
+    position: fixed;
     top: 16px;
     left: 16px;
     right: 16px;
@@ -202,7 +207,7 @@ html, body {
 }
 
 .card {
-    position: absolute;
+    position: fixed;
     top: 85px;
     left: 17px;
     z-index: 1000;
@@ -529,6 +534,16 @@ html, body {
         min-width: 56px !important;
         padding-left: 16px;
         padding-right: 16px;
+
+        /* Material gives a button with a leading icon 16px of leading space and
+           24px of trailing. With the label hidden that asymmetry is the whole
+           button, so it looks lopsided and wastes ~8px each. Both token pairs are
+           set to the same value because which one applies depends on whether the
+           component counts the slotted svg as a leading icon (Phase 0D s3). */
+        --md-filled-button-leading-space: 12px;
+        --md-filled-button-trailing-space: 12px;
+        --md-filled-button-with-leading-icon-leading-space: 12px;
+        --md-filled-button-with-leading-icon-trailing-space: 12px;
     }
 
     .top-nav > div {
@@ -650,9 +665,9 @@ html, body {
 
 /* The search card in landscape -- TWO problems, not one (Phase 0D).
    The block above is width-based, so on a normal phone held sideways (844 x 390)
-   it does not apply at all: .card keeps its desktop rule (position: absolute;
-   top: 85px) with NO max-height and NO overflow, so a tall form simply runs off
-   the bottom of a 390px-tall screen with no way to scroll to it. On a smaller
+   it does not apply at all: .card keeps its desktop rule (top: 85px) with NO
+   max-height and NO overflow, so a tall form simply runs off the bottom of a
+   390px-tall screen with no way to scroll to it. On a smaller
    phone (667 x 375) the block DOES match and the 50dvh cap leaves about 187px,
    which is merely cramped. Keying on orientation and height catches both, and
    sits after the block above so it wins wherever they overlap. */
