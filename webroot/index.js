@@ -477,11 +477,22 @@ async function checkAuthAndShowModal() {
 
     if (signinBtn) signinBtn.style.display = "flex"
 
-    if (sessionStorage.getItem("guest_mode")) {
+    // itineraries.html's guest banner sends people here to sign up. signup.html
+    // was retired; the form lives in this modal, so the link asks for its tab.
+    const params = new URLSearchParams(window.location.search)
+    const wantsSignup = params.get("signup") === "1"
+    if (wantsSignup) {
+        params.delete("signup")
+        const query = params.toString()
+        history.replaceState(null, "", window.location.pathname + (query ? "?" + query : ""))
+    }
+
+    if (sessionStorage.getItem("guest_mode") && !wantsSignup) {
         checkFirstVisit() // a returning guest in this session
     } else {
         // The welcome modal waits its turn -- two modals at once stack badly.
         authModal.style.display = "flex"
+        if (wantsSignup) window.switchModalTab("signup")
     }
 }
 
@@ -854,6 +865,8 @@ async function loadMiniDashboard() {
         const locale = localeMap[userRegion] || "en-GB"
 
         displayTrips.forEach((trip, index) => {
+            if (!trip.flights || trip.flights.length === 0) return
+
             const path = []
             trip.flights.forEach(f => path.push(f.from))
             path.push(trip.flights[trip.flights.length - 1].to)
@@ -1273,6 +1286,10 @@ function renderFlightData(itineraries, containerId) {
     })
 
     itineraries.forEach((itinerary, index) => {
+        // A trip with no legs has nothing to render, and every line below assumes
+        // flights[0] exists -- one bad row used to take the whole list with it.
+        if (!itinerary.flights || itinerary.flights.length === 0) return
+
         //Format the full route path (LGW -> DUB ...)
         const routeString = itinerary.path.map(airportSpan).join(' ➔ ')
         const startDate = itinerary.dates[0]

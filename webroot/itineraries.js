@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <strong>Guest Mode:</strong> Your trips are saved temporarily on this device.<br>
                         <span style="font-size: 14px; opacity: 0.8;">If you clear your browser data, these will be lost.</span>
                     </div>
-                    <md-filled-button onclick="window.location.href='signup.html'">Sign Up to Save</md-filled-button>
+                    <md-filled-button onclick="window.location.href='index.html?signup=1'">Sign Up to Save</md-filled-button>
                 </div>
             `;
             container.parentNode.insertBefore(banner, container)
@@ -98,7 +98,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Loop through the database results and build the UI cards
         savedTrips.forEach((trip, index) => {
-            
+            // Every line below assumes flights[0] exists. One legless row used to
+            // throw and take the whole page with it.
+            if (!trip.flights || trip.flights.length === 0) return
+
             // Reconstruct the route path (e.g., LHR -> ATH -> FCO -> LHR)
             const path = [];
             trip.flights.forEach(f => path.push(f.from));
@@ -237,18 +240,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     verifyBtn.innerHTML = "Verifying..."
                     verifyBtn.disabled = true
 
-                    // Clean the payload to send to PHP
-                    const payload = {
-                        itinerary_id: trip.itinerary_id,
-                        region: userRegion,
-                        currency: tripCurrency,
-                        flights: trip.flights.map(f => ({
-                            flight_id: f.flight_id,
-                            from: f.from,
-                            to: f.to,
-                            date: f.date || (trip.dates ? trip.dates[trip.flights.indexOf(f)] : null)
-                        }))
-                    }
+                    // The id, and nothing else. verify_itinerary.php builds the
+                    // legs, region and currency from the database and has ignored
+                    // a client-supplied flights array since Phase 0B item 7 -- the
+                    // invariant hook now fails the build if it reads one again.
+                    // Sending it advertised a contract that no longer exists.
+                    const payload = { itinerary_id: trip.itinerary_id }
 
                     try {
                         const res = await fetch("verify_itinerary.php", {
