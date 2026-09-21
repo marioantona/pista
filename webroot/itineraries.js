@@ -1,4 +1,5 @@
 import { escapeHtml, safeUrl } from "./escape.js?v=20260921"
+import { syncGuestTrips } from "./guest_sync.js?v=20260921"
 
 //helper function to read cookies
 function getCookie(name) {
@@ -48,20 +49,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         let savedTrips = []
 
         if (auth.logged_in) {
-            //If user just logged in, check if they have guest trips hiding in localStorgae
-            let guestTrips = JSON.parse(localStorage.getItem("pista_guest_trips")) ||[]
-            if (guestTrips.length > 0) {
-                console.log("Syncing guest trips to database...")
-                for (let trip of guestTrips) {
-                    await fetch("add_itinerary.php", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(trip)
-                    })
-                }
-                // wipe local storage noow that they're safely in the database
-                localStorage.removeItem("pista_guest_trips")
-            }
+            // Ghost Sync now fires at login (index.js). This call stays as a
+            // fallback for someone who lands straight here, and is a no-op when
+            // there is nothing left to drain.
+            await syncGuestTrips()
+
             
             //Fetch the data from the PHP backend
             const response = await fetch('retrieve_itineraries.php');

@@ -21,6 +21,9 @@ header('Content-Type: application/json');
 // save", which told nobody anything.
 function pista_itin_fail(string $message): void
 {
+    // 422: the request was well-formed JSON and we understood it, but the trip
+    // itself is not storable. Ghost Sync treats this as final and stops retrying.
+    http_response_code(422);
     echo json_encode(["success" => false, "error" => $message]);
     exit();
 }
@@ -79,6 +82,10 @@ function pista_logo_url($value): string
 
 $user_id = pista_current_user($conn);
 if ($user_id === null) {
+    // 401, not a bare 200 with success:false. Ghost Sync decides whether to keep
+    // or discard a trip from the status alone: a session that expired mid-sync
+    // must not look like a trip the server rejected.
+    http_response_code(401);
     echo json_encode(["success" => false, "error" => "User not authenticated."]);
     exit();
 }
@@ -89,20 +96,17 @@ $data = json_decode($json, true);
 
 // STRICT VALIDATION
 if (!$data || !isset($data["flights"]) || !is_array($data["flights"]) || count($data["flights"]) === 0) {
-    echo json_encode(["success" => false, "error" => "Invalid or empty flight data."]);
-    exit();
+    pista_itin_fail("Invalid or empty flight data.");
 }
 
 // Price verification spends one SerpAPI call per saved flight, so an oversized
 // trip must never be stored (Phase 0B item 7). No real search produces one.
 if (count($data["flights"]) > PISTA_MAX_ITINERARY_LEGS) {
-    echo json_encode(["success" => false, "error" => "An itinerary can have at most " . PISTA_MAX_ITINERARY_LEGS . " flights."]);
-    exit();
+    pista_itin_fail("An itinerary can have at most " . PISTA_MAX_ITINERARY_LEGS . " flights.");
 }
 
 if (!isset($data["totalCost"]) || !is_numeric($data["totalCost"])) {
-    echo json_encode(["success" => false, "error" => "Invalid total cost."]);
-    exit();
+    pista_itin_fail("Invalid total cost.");
 }
 
 // Currency falls back rather than failing: it is display state, and GBP is the
@@ -226,6 +230,8 @@ try {
     echo json_encode(["success" => true, "itinerary_id" => $itinerary_id]);
 } catch (\Throwable $e) {
     $conn->rollback();
+    // 500, not 422: nothing was decided about the trip, so it is worth retrying.
+    http_response_code(500);
     echo json_encode(["success" => false, "error" => "Database error during save."]);
 }
 

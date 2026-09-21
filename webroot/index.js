@@ -1,4 +1,5 @@
 import { escapeHtml, safeUrl } from "./escape.js?v=20260921"
+import { syncGuestTrips } from "./guest_sync.js?v=20260921"
 
 // Autocomplete dictionaries
 let globalAirportDict = {}
@@ -448,27 +449,40 @@ function checkFirstVisit() {
 }
 
 async function checkAuthAndShowModal() {
-    if (sessionStorage.getItem("guest_mode")) {
-        // Show Sign In button for guests who dismissed the modal
-        const signinBtn = document.getElementById("signin-nav-btn")
-        if (signinBtn) signinBtn.style.display = "flex"
+    const signinBtn = document.getElementById("signin-nav-btn")
 
-        checkFirstVisit() // check if they are a returning guest in this session
-        return
-    }
+    // Ask the server FIRST, always. The old version returned early whenever
+    // sessionStorage held guest_mode, which answered "is this a guest?" without
+    // ever asking -- so continuing as a guest and then signing in with a provider
+    // left the Sign In button sitting on the nav of a logged-in page (Phase 0E).
+    let loggedIn = false
     try {
         const res = await fetch("auth_status.php")
-        const data = await res.json();
-        if (!data.logged_in) {
-            authModal.style.display = "flex"
+        loggedIn = (await res.json()).logged_in === true
+    } catch (e) {
+        return // no answer: change nothing rather than guess
+    }
 
-            // Reveal Sign In button for unauthenticated users
-            const signinBtn = document.getElementById("signin-nav-btn")
-            if (signinBtn) signinBtn.style.display = "flex"
-        } else {
-            checkFirstVisit()
-        }
-    } catch (e) {}
+    if (loggedIn) {
+        // guest_mode is stale the moment a session exists.
+        sessionStorage.removeItem("guest_mode")
+        if (signinBtn) signinBtn.style.display = "none"
+        checkFirstVisit()
+
+        // The login path owns Ghost Sync: this runs after the modal login's
+        // reload, after an OAuth return, and after a remember-token resume.
+        await syncGuestTrips()
+        return
+    }
+
+    if (signinBtn) signinBtn.style.display = "flex"
+
+    if (sessionStorage.getItem("guest_mode")) {
+        checkFirstVisit() // a returning guest in this session
+    } else {
+        // The welcome modal waits its turn -- two modals at once stack badly.
+        authModal.style.display = "flex"
+    }
 }
 
 // Trigger on load
