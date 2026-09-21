@@ -210,11 +210,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ${warningBannerHtml}
                     <div class="route">${routeString}</div>
                     <div class="details" style="flex-direction: column; width: 100%;">
-                        <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 6px;">
+                        <div class="trip-summary">
                             <span class="date">${escapeHtml(startDate)} to ${escapeHtml(endDate)}</span>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="price">Total: ${displayTotal}${tripPriceChangeHtml}</span>
-
+                            <span class="price">Total: ${displayTotal}${tripPriceChangeHtml}</span>
+                            <div class="trip-actions">
                                 <md-filled-tonal-button class="view-map-btn" style="--md-filled-tonal-button-container-height: 32px; font-size: 12px;">
                                     <md-icon slot="icon" style="font-size: 16px;">map</md-icon> Map
                                 </md-filled-tonal-button>

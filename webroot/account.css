@@ -339,6 +339,33 @@ md-filled-text-field, md-outlined-select {
     color: var(--md-sys-color-primary); /* Makes the total cost pop in purple! */
 }
 
+/* The trip card's header row and its buttons. These were inline styles inside
+   itineraries.js's template, so no media query could reach them and five controls
+   ran off the right of a phone -- the same lesson as the asides in session 1,
+   this time in JS-generated markup (Phase 0D session 3). */
+.trip-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 6px;
+}
+
+/* margin-right: auto rather than justify-content: space-between, because there are
+   three children: this pins the date left and keeps the total next to the buttons
+   on one desktop row, exactly as before. It is also what pushes the date and the
+   total apart once the buttons wrap away to their own line below. */
+.trip-summary .date {
+    margin-right: auto;
+}
+
+.trip-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .itinerary-tab {
     margin-bottom: 1.2em;
 }
@@ -518,6 +545,17 @@ md-filled-text-field, md-outlined-select {
     .flight-card {
         flex-direction: column; /* stack airline logo above text on mobile */
         align-items: flex-start;
+    }
+
+    /* Giving .trip-actions the full width forces it onto its own line, which
+       leaves the date and the total sharing the line above -- pushed apart by the
+       date's auto margin. They only ever looked crowded because the row was
+       overflowing. The buttons then wrap rather than run off the screen: Map /
+       Verify / Book / delete is about 300px inside roughly 328px. */
+    .trip-actions {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 8px;
     }
 
     .itinerary-tab {
