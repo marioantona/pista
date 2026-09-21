@@ -1,3 +1,5 @@
+import { escapeHtml, safeUrl } from "./escape.js?v=20260921"
+
 //helper function to read cookies
 function getCookie(name) {
     const cookies = document.cookie.split('; ')
@@ -28,7 +30,9 @@ async function loadAirportDict() {
 // Wraps an IATA code in a tooltip span 
 function airportSpan(iata) {
     const city = airportDict[iata] || iata
-    return `<span title="${city}" style="cursor:help; text-decoration: underline dotted #CAC4D0; margin: 0 2px;">${iata}</span>`
+    // Both halves are escaped: the code comes from a saved row and the city name
+    // from /api/airports/all. Neither is ours to trust once it is HTML.
+    return `<span title="${escapeHtml(city)}" style="cursor:help; text-decoration: underline dotted #CAC4D0; margin: 0 2px;">${escapeHtml(iata)}</span>`
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -145,7 +149,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const flightDetailsHTML = trip.flights.map((flight, flightIndex) => {
                 //Grab the date from the flight object (DB) or the parallel array (LocalStorage)
                 const legDate = flight.date || (trip.dates ? trip.dates[flightIndex] : "Unknown Date");
-                const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" style="width:16px; height:16px; vertical-align:middle; border-radius:2px; margin-right:4px; background: white;">` : ""
+                const legLogo = safeUrl(flight.airline_logo)
+                const logoHtml = legLogo ? `<img src="${legLogo}" style="width:16px; height:16px; vertical-align:middle; border-radius:2px; margin-right:4px; background: white;">` : ""
 
                 // Handle Price History and unavailable flags for each leg
                 let legPriceHtml = ""
@@ -170,7 +175,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 return `<div style="display:flex; justify-content:space-between; font-size: 12px; margin-top: 4px; color: var(--md-sys-color-on-surface-variant);">
-                            <span style="display:flex; align-items:center;">${logoHtml} ${legDate} • ${airportSpan(flight.from)} ➔ ${airportSpan(flight.to)} (${flight.airline})</span>
+                            <span style="display:flex; align-items:center;">${logoHtml} ${escapeHtml(legDate)} • ${airportSpan(flight.from)} ➔ ${airportSpan(flight.to)} (${escapeHtml(flight.airline)})</span>
                             <span style="font-weight: bold;">${legPriceHtml}${legPriceChangeHtml}</span>
                         </div>`;
             }).join('');
@@ -188,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>` : ""
 
             //Use the logo of first flight for the main circular badge
-            const firstLogo = trip.flights[0].airline_logo
+            const firstLogo = safeUrl(trip.flights[0].airline_logo)
             const mainBadgeHtml = firstLogo ? `<img src="${firstLogo}" class="airline-logo" style="object-fit: contain; background: white;" alt="logo">` : `<div class="airline-logo">#${index + 1}</div>`
 
             // Added Price Verify button next to the delete button (hidden for Guests)
@@ -211,7 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <div class="route">${routeString}</div>
                     <div class="details" style="flex-direction: column; width: 100%;">
                         <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 6px;">
-                            <span class="date">${startDate} to ${endDate}</span>
+                            <span class="date">${escapeHtml(startDate)} to ${escapeHtml(endDate)}</span>
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span class="price">Total: ${displayTotal}${tripPriceChangeHtml}</span>
 

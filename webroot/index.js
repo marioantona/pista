@@ -1,3 +1,5 @@
+import { escapeHtml, safeUrl } from "./escape.js?v=20260921"
+
 // Autocomplete dictionaries
 let globalAirportDict = {}
 let globalAirportList = []
@@ -406,7 +408,8 @@ originInput.addEventListener('blur', async () => {
                 
                 // Drop a new marker and fly the map to it!
                 originMarker = L.marker([data.lat, data.lon]).addTo(map)
-                    .bindPopup(`<b>${code}</b><br>${data.country}`).openPopup();
+                    // Leaflet popups take HTML, so this is a sink like any innerHTML.
+                    .bindPopup(`<b>${escapeHtml(code)}</b><br>${escapeHtml(data.country)}`).openPopup();
                 
                 map.flyTo([data.lat, data.lon], 4, { animate: true, duration: 1.5 });
 
@@ -756,7 +759,13 @@ searchBtn.addEventListener('click', async () => {
             // The credits were charged before the search ran. Node signs a receipt
             // for a search that failed, which refund.php verifies -- see Phase 0C.
             if (data.refund) await claimRefund(data.refund)
-            resultsContainer.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`
+            // Built as text, not as HTML: an error message has no reason to be
+            // markup, and this one is relayed from Node (Phase 0C session 3).
+            resultsContainer.innerHTML = ""
+            const errorEl = document.createElement("p")
+            errorEl.style.color = "red"
+            errorEl.textContent = `Error: ${data.error}`
+            resultsContainer.appendChild(errorEl)
         }
     } catch (error) {
         console.error('Fetch error:', error)
@@ -792,7 +801,9 @@ document.getElementById('nav-flights').onclick = () => {
 // Falls back to the raw code if the dict doesn't have an entry.
 function airportSpan(iata) {
     const city = globalAirportDict[iata] || iata
-    return `<span title="${city}" style="cursor:help; text-decoration: underline dotted var(--md-sys-color-surface-variant); margin: 0 2px;">${iata}</span>`
+    // Escaped on both halves -- the code comes back from the search or from a
+    // saved row, the city name from /api/airports/all.
+    return `<span title="${escapeHtml(city)}" style="cursor:help; text-decoration: underline dotted var(--md-sys-color-surface-variant); margin: 0 2px;">${escapeHtml(iata)}</span>`
 }
 
 async function loadMiniDashboard() {
@@ -839,7 +850,7 @@ async function loadMiniDashboard() {
             const priceFormatter = new Intl.NumberFormat(locale, { style: "currency", currency: trip.currency || 'GBP', maximumFractionDigits: 0})
 
             //Airline logo
-            const firstLogo = trip.flights[0].airline_logo
+            const firstLogo = safeUrl(trip.flights[0].airline_logo)
             const mainBadgeHtml = firstLogo 
             ? `<img src="${firstLogo}" class="airline-logo" style="object-fit: contain; background: white;" alt="logo">`
             : `<div class="airline-logo" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">#${index + 1}</div>`
@@ -852,7 +863,7 @@ async function loadMiniDashboard() {
                 <div class="flight-info" style="width: 100%;">
                     <div class="route">${routeString}</div>
                     <div class="details">
-                        <span class="date">${startDate}</span>
+                        <span class="date">${escapeHtml(startDate)}</span>
                         <span class="price">${priceFormatter.format(trip.totalCost || trip.total_cost)}</span>
                     </div>
                 </div>
@@ -926,10 +937,13 @@ document.querySelectorAll('.next-btn').forEach(btn => {
 
                     //build dynamic deep link (native aviasales)
                     const passengerString = parseInt(children) > 0 ? `${adults}${children}` : `${adults}`
-                    const deepLink = `https://www.aviasales.com/search/${origin}${formattedDate}${dest}${passengerString}?marker=${markerId}&currency=${currency.toLowerCase()}`
+                    // Percent-encoded before it becomes a URL, and escaped again below before it
+                    // becomes an attribute: this one lands inside an inline onclick, so a
+                    // stray quote in a leg would be executable, not merely ugly.
+                    const deepLink = `https://www.aviasales.com/search/${encodeURIComponent(origin)}${encodeURIComponent(formattedDate)}${encodeURIComponent(dest)}${encodeURIComponent(passengerString)}?marker=${markerId}&currency=${encodeURIComponent(currency.toLowerCase())}`
 
-                    const logoHtml = flight.airline_logo
-                        ? `<img src="${flight.airline_logo}" style="width:28px; height:28px; border-radius: 4px; background: white; object-fit: contain;">`
+                    const logoHtml = safeUrl(flight.airline_logo)
+                        ? `<img src="${safeUrl(flight.airline_logo)}" style="width:28px; height:28px; border-radius: 4px; background: white; object-fit: contain;">`
                         : `<md-icon style="font-size:28px; color: var(--md-sys-color-primary);">flight</md-icon>`
 
                     hubHtml += `
@@ -937,11 +951,11 @@ document.querySelectorAll('.next-btn').forEach(btn => {
                             <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                                 ${logoHtml}
                                 <div style="display: flex; flex-direction: column;">
-                                    <span style="font-weight: bold; font-size: 14px; color: var(--md-sys-color-on-surface);">${origin} ➔ ${dest}</span>
-                                    <span style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">${legDate} • ${flight.airline}</span>
+                                    <span style="font-weight: bold; font-size: 14px; color: var(--md-sys-color-on-surface);">${escapeHtml(origin)} ➔ ${escapeHtml(dest)}</span>
+                                    <span style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">${escapeHtml(legDate)} • ${escapeHtml(flight.airline)}</span>
                                 </div>
                             </div>
-                            <md-filled-button onclick="window.open('${deepLink}', '_blank')" style="--md-filled-button-container-height: 36px; font-size: 13px;">
+                            <md-filled-button onclick="window.open('${escapeHtml(deepLink)}', '_blank')" style="--md-filled-button-container-height: 36px; font-size: 13px;">
                                 <md-icon slot="icon" style="font-size: 16px;">open_in_new</md-icon> Book
                             </md-filled-button>
                         </div>`
@@ -1253,15 +1267,16 @@ function renderFlightData(itineraries, containerId) {
         //gen html for each individual flight leg
         const flightDetailsHTML = itinerary.flights.map((flight, flightIndex) => {
             const legDate = itinerary.dates[flightIndex]
-            const logoHtml = flight.airline_logo ? `<img src="${flight.airline_logo}" style="width:16px; height:16px; vertical-align: middle; border-radius: 2px; margin-right: 4px; background: white;">` : ""
+            const legLogo = safeUrl(flight.airline_logo)
+            const logoHtml = legLogo ? `<img src="${legLogo}" style="width:16px; height:16px; vertical-align: middle; border-radius: 2px; margin-right: 4px; background: white;">` : ""
 
 
             return `<div style="display:flex; justify-content:space-between; font-size: 12px; margin-top: 4px; color: var(--md-sys-color-on-surface-variant);">
                         <span style="display:flex; align-items:center;">
-                            ${logoHtml} ${legDate} • 
+                            ${logoHtml} ${escapeHtml(legDate)} • 
                             ${airportSpan(flight.from)} ➔ 
                             ${airportSpan(flight.to)}
-                            (${flight.airline})
+                            (${escapeHtml(flight.airline)})
                         </span>
                         <span style="font-weight: bold;">${priceFormatter.format(flight.price)}</span>
                     </div>`
@@ -1272,7 +1287,7 @@ function renderFlightData(itineraries, containerId) {
         flightBlock.id = `itinerary-card-${index}` // unique ID so map arcs can find this card
 
         // Use the logo of the first flight for the main circular badge, fallback to the index number
-        const firstLogo = itinerary.flights[0].airline_logo
+        const firstLogo = safeUrl(itinerary.flights[0].airline_logo)
         const mainBadgeHtml = firstLogo ? `<img src="${firstLogo}" class="airline-logo" style="object-fit: contain; background: white;" alt="logo">` : `<div class="airline-logo">#${index + 1}</div>`
 
         flightBlock.innerHTML = `
@@ -1281,7 +1296,7 @@ function renderFlightData(itineraries, containerId) {
                 <div class="route">${routeString}</div>
                 <div class="details" style="flex-direction: column; width: 100%;">
                     <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 6px;">
-                        <span class="date">${startDate} to ${endDate}</span>
+                        <span class="date">${escapeHtml(startDate)} to ${escapeHtml(endDate)}</span>
                         <span class="price" style="font-size: 16px; font-weight: bold;">
                             Total: ${priceFormatter.format(itinerary.totalCost)}
                             <span style="font-size: 12px; font-weight: normal; color: var(--md-sys-color-on-surface-variant); margin-left: 4px;">(all passengers)</span>
@@ -1475,10 +1490,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const adults = parsedItin.adults ?? 1
                 const children = parsedItin.children ?? 0
                 const passengerString = parseInt(children) > 0 ? `${adults}${children}` : `${adults}`
-                const deepLink = `https://www.aviasales.com/search/${origin}${formattedDate}${dest}${passengerString}?marker=${markerId}&currency=${currency.toLowerCase()}`
+                // Percent-encoded before it becomes a URL, and escaped again below before it
+                    // becomes an attribute: this one lands inside an inline onclick, so a
+                    // stray quote in a leg would be executable, not merely ugly.
+                    const deepLink = `https://www.aviasales.com/search/${encodeURIComponent(origin)}${encodeURIComponent(formattedDate)}${encodeURIComponent(dest)}${encodeURIComponent(passengerString)}?marker=${markerId}&currency=${encodeURIComponent(currency.toLowerCase())}`
 
-                const logoHtml = flight.airline_logo
-                    ? `<img src="${flight.airline_logo}" style="width:28px; height:28px; border-radius: 4px; background: white; object-fit: contain;">`
+                const logoHtml = safeUrl(flight.airline_logo)
+                    ? `<img src="${safeUrl(flight.airline_logo)}" style="width:28px; height:28px; border-radius: 4px; background: white; object-fit: contain;">`
                     : `<md-icon style="font-size:28px; color: var(--md-sys-color-primary);">flight</md-icon>`
 
                 hubHtml += `
@@ -1486,11 +1504,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                             ${logoHtml}
                             <div style="display: flex; flex-direction: column;">
-                                <span style="font-weight: bold; font-size: 14px; color: var(--md-sys-color-on-surface);">${origin} ➔ ${dest}</span>
-                                <span style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">${legDate} • ${flight.airline}</span>
+                                <span style="font-weight: bold; font-size: 14px; color: var(--md-sys-color-on-surface);">${escapeHtml(origin)} ➔ ${escapeHtml(dest)}</span>
+                                <span style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">${escapeHtml(legDate)} • ${escapeHtml(flight.airline)}</span>
                             </div>
                         </div>
-                        <md-filled-button onclick="window.open('${deepLink}', '_blank')" style="--md-filled-button-container-height: 36px; font-size: 13px;">
+                        <md-filled-button onclick="window.open('${escapeHtml(deepLink)}', '_blank')" style="--md-filled-button-container-height: 36px; font-size: 13px;">
                             <md-icon slot="icon" style="font-size: 16px;">open_in_new</md-icon> Book
                         </md-filled-button>
                     </div>`

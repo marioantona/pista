@@ -1,3 +1,5 @@
+import { safeUrl } from "./escape.js?v=20260921"
+
 //helper function to read cookies
 function getCookie(name) {
     const cookies = document.cookie.split('; ')
@@ -42,9 +44,11 @@ async function loadUserProfile() {
             // Avatar rendering logic
             const avatarContainer = document.querySelector(".avatar-container")
             if (avatarContainer) {
-                if (picUrl) {
-                    // OAuth user with a real profile picture
-                    avatarContainer.innerHTML = `<img src="${picUrl}" alt="Profile picture"
+                if (safeUrl(picUrl)) {
+                    // OAuth user with a real profile picture. The URL comes from the
+                    // provider and lands in a src attribute, so it goes through
+                    // safeUrl() -- escaping alone would still admit javascript:.
+                    avatarContainer.innerHTML = `<img src="${safeUrl(picUrl)}" alt="Profile picture"
                         style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
                         onerror="this.parentElement.innerHTML='<span class=\\'material-symbols-outlined\\'>person</span>'">`
                 } else {
