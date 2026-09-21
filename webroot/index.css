@@ -581,6 +581,23 @@ html, body {
         margin: 0;
     }
 }
+
+/* The search card in landscape -- TWO problems, not one (Phase 0D).
+   The block above is width-based, so on a normal phone held sideways (844 x 390)
+   it does not apply at all: .card keeps its desktop rule (position: absolute;
+   top: 85px) with NO max-height and NO overflow, so a tall form simply runs off
+   the bottom of a 390px-tall screen with no way to scroll to it. On a smaller
+   phone (667 x 375) the block DOES match and the 50dvh cap leaves about 187px,
+   which is merely cramped. Keying on orientation and height catches both, and
+   sits after the block above so it wins wherever they overlap. */
+@media (orientation: landscape) and (max-height: 500px) {
+    .card {
+        top: 70px;
+        max-height: calc(100dvh - 86px);
+        overflow-y: auto;
+    }
+}
+
 /* Credit price line and explainer (complexity pricing, RUNBOOK §12).
    Uses the Material tokens the rest of the form uses, so it follows both themes. */
 .credit-line {
