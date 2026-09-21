@@ -617,7 +617,33 @@ html, body {
         min-width: 48px !important;
     }
 
-    .circle[data-theme-toggle] {
+    /* #pista has to shrink WITH them. Its own rule promises "height matches circle
+       buttons" and session 2 broke that promise by shrinking everything except this
+       (Phase 0D session 3). Its wordmark is the widest thing in the nav -- roughly
+       70px at a 24px height, plus padding -- so this is also where most of the room
+       comes from. */
+    #pista {
+        height: 48px;
+        padding: 0 8px;
+    }
+
+    #pista img[data-pista-logo] {
+        height: 24px;
+    }
+
+    /* Three controls go below 480px, and the arithmetic is why: the brand mark at
+       ~86px plus four circles at 48px with 4px gaps is ~290px, against ~344px of
+       usable width on a 360px screen. Putting any of them back costs ~52px and
+       leaves no margin for error.
+         - the theme toggle: theme.js falls back to prefers-color-scheme and
+           account.html has its own toggle, so nothing is lost;
+         - the Flights / Itineraries pair: they switch to the quick-view dashboard,
+           which is a convenience. The Saved Trips circle still opens the full page,
+           so no destination becomes unreachable. Hidden in CSS only, so index.js
+           still binds their click handlers and needs no change. */
+    .circle[data-theme-toggle],
+    #nav-flights,
+    #nav-itineraries {
         display: none;
     }
 }
