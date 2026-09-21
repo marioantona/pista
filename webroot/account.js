@@ -1,4 +1,4 @@
-import { safeUrl } from "./escape.js?v=20260921d"
+import { safeUrl } from "./escape.js?v=20260921e"
 
 //helper function to read cookies
 function getCookie(name) {
