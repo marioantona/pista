@@ -1,5 +1,5 @@
-import { escapeHtml, safeUrl } from "./escape.js?v=20260921"
-import { syncGuestTrips } from "./guest_sync.js?v=20260921"
+import { escapeHtml, safeUrl } from "./escape.js?v=20260921b"
+import { syncGuestTrips } from "./guest_sync.js?v=20260921b"
 
 //helper function to read cookies
 function getCookie(name) {
