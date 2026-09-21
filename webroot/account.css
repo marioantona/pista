@@ -61,6 +61,13 @@ aside {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Moved off an inline style on account.html (Phase 0D). That inline rule also
+       set height: 100vh, which beat the 850px query below and left a phone with a
+       full screen of sidebar and the content pushed under it -- and was wrong on
+       desktop too: with margin: 24px it made the aside 48px taller than the space
+       available, clipped by body's overflow: hidden. The aside needs no height at
+       all; body is a flex row, so it already stretches. */
+    box-sizing: border-box;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
