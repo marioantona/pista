@@ -448,6 +448,18 @@ function checkFirstVisit() {
     }
 }
 
+window.switchModalTab = function(tab) {
+    document.getElementById("modal-login-form").style.display = tab === "login" ? "flex" : "none"
+    document.getElementById("modal-signup-form").style.display = tab === "signup" ? "flex" : "none"
+
+    document.getElementById("modal-login-tab").style.setProperty("--md-filled-tonal-button-container-color", tab === "login" ? "#6750A4" : "rgba(255,255,255,0.1)")
+    document.getElementById("modal-signup-tab").style.setProperty("--md-filled-tonal-button-container-color", tab === "signup" ? "#6750A4" : "rgba(255,255,255,0.1)")
+}
+
+// Defined ABOVE checkAuthAndShowModal because that function calls it. An
+// assignment to window is not hoisted like a declaration -- today the call is
+// reached only after an await, so the module body has finished either way, but
+// that is timing, not structure.
 async function checkAuthAndShowModal() {
     const signinBtn = document.getElementById("signin-nav-btn")
 
@@ -504,14 +516,6 @@ guestBtn.addEventListener("click", () => {
     authModal.style.display = "none"
     checkFirstVisit()
 })
-
-window.switchModalTab = function(tab) {
-    document.getElementById("modal-login-form").style.display = tab === "login" ? "flex" : "none"
-    document.getElementById("modal-signup-form").style.display = tab === "signup" ? "flex" : "none"
-
-    document.getElementById("modal-login-tab").style.setProperty("--md-filled-tonal-button-container-color", tab === "login" ? "#6750A4" : "rgba(255,255,255,0.1)")
-    document.getElementById("modal-signup-tab").style.setProperty("--md-filled-tonal-button-container-color", tab === "signup" ? "#6750A4" : "rgba(255,255,255,0.1)")
-}
 
 async function handleAuthSubmit(e, url) {
     e.preventDefault()
