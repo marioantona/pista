@@ -17,13 +17,19 @@ $profile = ["details" => null, "preferences" => null, "profile_picture_url" => n
 // an OAuth-only account has password IS NULL, so asking it for a password (as
 // DeleteAccount.html used to) can never succeed. Never send the hash itself.
 $pic_stmt = $conn->prepare("SELECT profile_picture_url, password IS NULL AS oauth_only, oauth_provider FROM users WHERE user_id = ?");
+// 'local' is the default provider value for an email signup, so it does not count
+// as a linked provider.
 $pic_stmt->bind_param("i", $user_id);
 $pic_stmt->execute();
 $pic_res = $pic_stmt->get_result();
 if ($pic_row = $pic_res->fetch_assoc()) {
     $profile["profile_picture_url"] = $pic_row["profile_picture_url"]; // null for email signups
-    $profile["auth_method"] = $pic_row["oauth_only"] ? "oauth" : "password";
-    $profile["oauth_provider"] = $pic_row["oauth_provider"];
+    $linked = !empty($pic_row["oauth_provider"]) && $pic_row["oauth_provider"] !== 'local';
+    // An account can have BOTH: signed up with a password, later linked a provider
+    // (oauth_callback.php backfills on a matching email). Those people usually sign
+    // in with the provider, so asking only for the password is a surprise.
+    $profile["auth_method"] = $pic_row["oauth_only"] ? "oauth" : ($linked ? "both" : "password");
+    $profile["oauth_provider"] = $linked ? $pic_row["oauth_provider"] : null;
 }
 $pic_stmt->close();
 

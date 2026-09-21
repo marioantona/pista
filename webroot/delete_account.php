@@ -6,6 +6,7 @@ require_once __DIR__ . '/session.php';
 // Connecting to the database
 include("configure.php");
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/client_ip.php';
 
 // Every refusal sends the user back to the form with a reason, instead of the
 // blank page this file used to return. DeleteAccount.html posts natively, so a
@@ -26,30 +27,32 @@ if ($user_id === null) {
 // How does this account prove itself? An OAuth-only account has password IS NULL,
 // and password_verify($p, null) always fails (and raises a PHP 8.1 deprecation),
 // which is why those users could never delete their account at all.
-$stmt = $conn->prepare("SELECT password FROM users WHERE user_id = ?");
+$stmt = $conn->prepare("SELECT password, email, credits_remaining FROM users WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$stmt->bind_result($hashed_password);
+$stmt->bind_result($hashed_password, $account_email, $credits_left);
 $stmt->fetch();
 $stmt->close();
 
-$is_oauth_only = !is_string($hashed_password) || $hashed_password === '';
+$has_password = is_string($hashed_password) && $hashed_password !== '';
 
-if ($is_oauth_only) {
-    // Proof is a fresh trip through the provider, recorded by oauth_callback.php.
-    // Five minutes: long enough to click through a consent screen, short enough
-    // that a forgotten tab cannot authorise a deletion later.
-    $reauth_at = isset($_SESSION['reauth_ok_at']) ? (int) $_SESSION['reauth_ok_at'] : 0;
-    if ($reauth_at <= 0 || (time() - $reauth_at) > 300) {
-        pista_delete_fail('reauth');
-    }
-    // Single use: consumed whether or not the rest succeeds.
-    unset($_SESSION['reauth_ok_at']);
-} else {
-    $password = $_POST["password"] ?? '';
-    if (!is_string($password) || $password === '' || !password_verify($password, $hashed_password)) {
-        pista_delete_fail('password');
-    }
+// Proof through the provider, recorded by oauth_callback.php. Five minutes: long
+// enough to click through a consent screen, short enough that a forgotten tab
+// cannot authorise a deletion later. Single use, consumed on sight.
+$reauth_at = isset($_SESSION['reauth_ok_at']) ? (int) $_SESSION['reauth_ok_at'] : 0;
+$reauth_fresh = $reauth_at > 0 && (time() - $reauth_at) <= 300;
+unset($_SESSION['reauth_ok_at']);
+
+$password = $_POST["password"] ?? '';
+$password_ok = $has_password && is_string($password) && $password !== ''
+    && password_verify($password, $hashed_password);
+
+// An account with both a password and a linked provider accepts EITHER, because
+// either one is how that person actually signs in. An OAuth-only account has no
+// hash to check, and a password-only account has no provider to return from, so
+// each of those still has exactly one route.
+if (!$password_ok && !$reauth_fresh) {
+    pista_delete_fail($has_password ? 'password' : 'reauth');
 }
 
 // Using a transaction to ensure all data to a user is deleted when the account is deleted
@@ -77,6 +80,26 @@ $ref_stmt = $conn->prepare("DELETE FROM refunds WHERE subject = ?");
 $ref_stmt->bind_param("s", $subject);
 $ref_stmt->execute();
 $ref_stmt->close();
+
+// A tombstone, so deleting and re-registering the same address cannot refill the
+// quota (Phase 0C). It records what was LEFT, hashed: never the address itself.
+// LEAST() on a repeat inside one period, so a delete-recreate-delete cycle can only
+// ever carry the smaller balance forward.
+$email_hash = hash('sha256', strtolower(trim((string) $account_email)));
+$ip_hash = hash('sha256', pista_client_ip());
+$period = date('Y-m');
+$credits_left = max(0, (int) $credits_left);
+
+$tomb = $conn->prepare("INSERT INTO account_tombstones (email_hash, ip_hash, credits_left, period)
+                        VALUES (?, ?, ?, ?)
+                        ON DUPLICATE KEY UPDATE
+                            credits_left = IF(period = VALUES(period), LEAST(credits_left, VALUES(credits_left)), VALUES(credits_left)),
+                            ip_hash = VALUES(ip_hash),
+                            period = VALUES(period),
+                            deleted_at = CURRENT_TIMESTAMP");
+$tomb->bind_param("ssis", $email_hash, $ip_hash, $credits_left, $period);
+$tomb->execute();
+$tomb->close();
 
 // Deleting the user
 $user_stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");

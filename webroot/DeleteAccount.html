@@ -226,12 +226,15 @@
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success) return;
-                    if (data.data.auth_method !== "oauth") return;
+                    const method = data.data.auth_method;
+                    if (method !== "oauth" && method !== "both") return;
 
-                    // No password exists on this account: asking for one could only
-                    // ever fail, which is exactly the bug this replaces.
-                    passwordBlock.style.display = "none";
-                    document.getElementById("password").removeAttribute("name");
+                    if (method === "oauth") {
+                        // No password exists on this account: asking for one could
+                        // only ever fail, which is exactly the bug this replaces.
+                        passwordBlock.style.display = "none";
+                        document.getElementById("password").removeAttribute("name");
+                    }
 
                     const provider = data.data.oauth_provider || "";
                     const label = provider === "microsoft" ? "Microsoft" : provider === "google" ? "Google" : "your provider";
@@ -240,11 +243,15 @@
                         intro.textContent = "Identity confirmed. Deleting your account cannot be undone.";
                         submitBlock.style.display = "";
                         oauthBlock.style.display = "none";
+                        if (method === "both") passwordBlock.style.display = "none";
                     } else {
-                        intro.textContent = "Confirm with " + label + " to delete your account.";
+                        intro.textContent = method === "both"
+                            ? "Enter your password, or confirm with " + label + ", to delete your account."
+                            : "Confirm with " + label + " to delete your account.";
                         reauthBtn.textContent = "Confirm with " + label;
                         oauthBlock.style.display = "";
-                        submitBlock.style.display = "none";
+                        // A hybrid account keeps the password field as well: either proof works.
+                        submitBlock.style.display = method === "both" ? "" : "none";
                         reauthBtn.addEventListener("click", () => {
                             window.location.href = "oauth_handler.php?provider=" + encodeURIComponent(provider) + "&purpose=delete";
                         });
