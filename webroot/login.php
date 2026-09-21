@@ -42,6 +42,32 @@ function pista_login_fail(mysqli $conn, string $ipBucket, string $emailBucket): 
     exit();
 }
 
+// A real bcrypt hash of a value nobody can present, verified on the paths that
+// have no hash of their own. Without it the no-such-user and OAuth-only paths
+// answer measurably faster than a wrong password, which tells an attacker which
+// addresses hold password accounts -- the timing channel logged in RUNBOOK §15.
+// 🔴 Generate this ON THE SERVER: password_hash() uses PASSWORD_DEFAULT's cost,
+// which differs per machine. The first version of this constant was made on a dev
+// laptop at cost 12 while the server hashes at cost 10, so the "equalising" path
+// took ~478 ms against a real verify's ~107 ms -- a bigger timing signal than the
+// one it was meant to remove, pointing the other way. Regenerate with:
+//   ssh pista 'php -r "echo password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);"'
+const PISTA_DUMMY_HASH = '$2y$10$mYYOwUV0LzcljUXJ9zsyoe5Q3AFlLI/T6Q4XEXw7BtfQEk642mvJ.';
+
+// Costs one bcrypt verification and returns nothing. The return value is
+// deliberately ignored: this exists to spend the time, not to decide anything.
+function pista_equalise_login_timing(string $password): void
+{
+    // Costs nothing (no hashing): password_needs_rehash only inspects the header.
+    // If PHP's default cost ever moves, this says so in the log instead of leaving
+    // the equalisation quietly lopsided.
+    if (password_needs_rehash(PISTA_DUMMY_HASH, PASSWORD_DEFAULT)) {
+        error_log('PISTA_DUMMY_HASH no longer matches PASSWORD_DEFAULT: login timing equalisation is off');
+    }
+
+    password_verify($password, PISTA_DUMMY_HASH);
+}
+
 // Using POST to login to the account 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"] ?? '');
@@ -85,7 +111,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // OAuth-only accounts have password IS NULL. password_verify() with a null
         // hash raises a PHP 8.1+ deprecation, so check the type first; the attempt
         // then fails like any other wrong password, and is counted like one.
-        if (is_string($hashed_password) && password_verify($password, $hashed_password)) {
+        if (!is_string($hashed_password) || $hashed_password === '') {
+            // OAuth-only account: no hash to check, so spend the same time anyway.
+            pista_equalise_login_timing($password);
+            pista_login_fail($conn, $rl_ip, $rl_email);
+        }
+
+        if (password_verify($password, $hashed_password)) {
 
             // A successful login clears this address's failure count. The IP bucket
             // is left alone, so one valid account cannot reset a sprayer's budget.
@@ -169,6 +201,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     else {
+        // No such address. Spend a bcrypt verification anyway, so this path cannot
+        // be told from a wrong password by how fast it answers.
+        pista_equalise_login_timing($password);
         pista_login_fail($conn, $rl_ip, $rl_email);
     }
 

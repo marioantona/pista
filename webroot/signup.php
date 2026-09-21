@@ -4,6 +4,8 @@ require_once __DIR__ . '/session.php';
 // Connecting to the database
 include("configure.php");
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/rate_limit.php';
 
 header('Content-Type: application/json');
 
@@ -20,6 +22,14 @@ const PISTA_PASSWORD_MAX_BYTES = 72;
 const PISTA_FULLNAME_MAX = 100;
 const PISTA_EMAIL_MAX = 255;
 
+// Signup deliberately reveals whether an address is already registered (RUNBOOK
+// §17's register: unavoidable without verify-before-create), which left it the
+// one unthrottled way to test addresses in bulk. Item 5 rate-limited login and
+// password reset but not this. Per IP only: an email bucket here would itself
+// confirm which addresses had been tried.
+const PISTA_SIGNUP_WINDOW = 3600;   // 1 hour
+const PISTA_SIGNUP_LIMIT_IP = 10;
+
 function pista_signup_fail(string $message): void {
     echo json_encode(["success" => false, "error" => $message]);
     exit();
@@ -29,6 +39,22 @@ function pista_signup_fail(string $message): void {
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
     pista_signup_fail("Method not allowed.");
+}
+
+// Throttle before any lookup, so a throttled request cannot be used to probe an
+// address either. Fails OPEN like login.php, not closed like forgot_password.php:
+// a database blip must not stop people signing up, and unlike password reset
+// there is no finite email allowance to protect.
+$rl_signup_ip = 'signup:ip:' . pista_client_ip();
+try {
+    if (pista_rate_limited($conn, $rl_signup_ip, PISTA_SIGNUP_LIMIT_IP, PISTA_SIGNUP_WINDOW)) {
+        error_log("Signup throttled: client " . pista_client_ip());
+        http_response_code(429);
+        pista_signup_fail("Too many sign-up attempts from this network. Please try again later.");
+    }
+    pista_rate_hit($conn, $rl_signup_ip, PISTA_SIGNUP_WINDOW);
+} catch (\Throwable $e) {
+    error_log("SIGNUP RATE LIMITER FAILED (failing open): " . $e->getMessage());
 }
 
 $fullname = trim($_POST["fullname"] ?? '');
