@@ -422,7 +422,12 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         nextCandidates.sort((a, b) => a.totalCost - b.totalCost);
 
         let newBeam = [];
-        let addedPaths = new Set(); // To ensure we don't accidentally add the exact same route twice
+        // To ensure we don't accidentally add the exact same route twice. It only
+        // does that if every loop below READS it -- the cheapest-slots loop used to
+        // write it and never check it, which is how identical candidates took two
+        // consecutive slots. Redundant now that candidates are unique by path, and
+        // kept deliberately: it is the guard that survives a future change upstream.
+        let addedPaths = new Set();
         
         //expand beam on the final hop so we have backup candidates for the return flight
         const targetBeamSize = (hop === numDestinations - 1) ? beamWidth + 3 : beamWidth
@@ -430,8 +435,10 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         // Slot 1 & 2: Take the absolute cheapest routes available
         const numCheapestSlots = Math.max(1, targetBeamSize - 1); 
         for (let i = 0; i < nextCandidates.length && newBeam.length < numCheapestSlots; i++) {
+            const key = nextCandidates[i].path.join(',');
+            if (addedPaths.has(key)) continue;
             newBeam.push(nextCandidates[i]);
-            addedPaths.add(nextCandidates[i].path.join(','));
+            addedPaths.add(key);
         }
 
         // Slot 3 (The Constraint Survivor): Find the cheapest remaining route with the HIGHEST fulfilled constraints
@@ -455,7 +462,11 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         // If the beam still isn't full (e.g., no includes needed), fill it with whatever cheapest routes are left
         let remaining = nextCandidates.filter(c => !addedPaths.has(c.path.join(',')));
         while (newBeam.length < targetBeamSize && remaining.length > 0) {
-            newBeam.push(remaining.shift());
+            const next = remaining.shift();
+            const key = next.path.join(',');
+            if (addedPaths.has(key)) continue;
+            newBeam.push(next);
+            addedPaths.add(key);
         }
 
         beam = newBeam;
@@ -553,6 +564,21 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         }
         // Final sort to guarantee the absolute cheapest completed itinerary is at the top
         completedItineraries.sort((a,b) => a.totalCost - b.totalCost)
+
+        // A detector, not a filter. Candidates are unique by path and the beam guard
+        // now reads itself, so this cannot fire -- but duplicates reached real users
+        // once, and a silent filter here would have hidden the cause instead of
+        // showing it. If it ever fires, the log says so and the list is still served.
+        const seenPaths = new Set()
+        const repeated = completedItineraries.filter(itin => {
+            const key = itin.path.join(',')
+            if (seenPaths.has(key)) return true
+            seenPaths.add(key)
+            return false
+        })
+        if (repeated.length > 0) {
+            console.warn(`[DUPLICATE ROUTES] ${repeated.length} itinerary/ies repeat a path: ${[...new Set(repeated.map(i => i.path.join('>')))].join(' | ')}`)
+        }
 
         return completedItineraries
 
