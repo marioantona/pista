@@ -10,15 +10,20 @@ if ($user_id === null) {
     echo json_encode(["success" => false, "error" => "Not logged in"]);
     exit();
 }
-$profile = ["details" => null, "preferences" => null, "profile_picture_url" => null];
+$profile = ["details" => null, "preferences" => null, "profile_picture_url" => null,
+            "auth_method" => "password", "oauth_provider" => null];
 
-// fetch profile_picture_url from users table
-$pic_stmt = $conn->prepare("SELECT profile_picture_url FROM users WHERE user_id = ?");
+// fetch profile_picture_url from users table, plus HOW this account signs in:
+// an OAuth-only account has password IS NULL, so asking it for a password (as
+// DeleteAccount.html used to) can never succeed. Never send the hash itself.
+$pic_stmt = $conn->prepare("SELECT profile_picture_url, password IS NULL AS oauth_only, oauth_provider FROM users WHERE user_id = ?");
 $pic_stmt->bind_param("i", $user_id);
 $pic_stmt->execute();
 $pic_res = $pic_stmt->get_result();
 if ($pic_row = $pic_res->fetch_assoc()) {
     $profile["profile_picture_url"] = $pic_row["profile_picture_url"]; // null for email signups
+    $profile["auth_method"] = $pic_row["oauth_only"] ? "oauth" : "password";
+    $profile["oauth_provider"] = $pic_row["oauth_provider"];
 }
 $pic_stmt->close();
 

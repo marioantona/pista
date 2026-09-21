@@ -18,6 +18,11 @@ $config = $oauth_config[$provider];
 $_SESSION['oauth_state'] = bin2hex(random_bytes(16));
 $_SESSION['oauth_provider'] = $provider;
 
+// 'delete' means: prove you are still this person, then come back -- do not log
+// anyone in, and do not create anything. delete_account.php does the deleting;
+// this round trip only produces the proof (Phase 0C).
+$_SESSION['oauth_purpose'] = (isset($_GET['purpose']) && $_GET['purpose'] === 'delete') ? 'delete' : 'login';
+
 // Build the authorization URL
 $params = [
     'client_id' => $config['client_id'],

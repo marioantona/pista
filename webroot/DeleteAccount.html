@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PISTA – Reset Password</title>
+    <title>PISTA – Delete Account</title>
+    <link rel="icon" type="image/svg+xml" id="pista-favicon" href="pictures/logos/favicon-light.svg" />
 
     <!-- Fonts & Material You -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
@@ -154,28 +155,38 @@
         <div class="auth-card">
 
             <div class="logo">
-                <img src="pictures/logos/simplified-h-dark.svg" alt="PISTA" style="height: 48px; width: auto; max-width: 280px; object-fit: contain; margin-bottom: 8px;" />
+                <img data-pista-logo="simplified-h" src="pictures/logos/simplified-h-light.svg" alt="PISTA" style="height: 48px; width: auto; max-width: 280px; object-fit: contain; margin-bottom: 8px;" />
             </div>
 
-            <form class="form" method="POST" action="delete_account.php">
+            <form class="form" method="POST" action="delete_account.php" id="delete-form">
 
-                <div class="message">
+                <div class="message" id="delete-intro">
                     Enter your password in order to delete your account
                 </div>
 
                 <p class="error-message" id="error-msg"></p>
                 <p class="success-message" id="success-msg"></p>
 
-                <md-filled-text-field
-                    id="password"
-                    name="password"
-                    label="Password"
-                    type="password"
-                    required>
-                    <md-icon slot="leading-icon">lock</md-icon>
-                </md-filled-text-field>
+                <div id="password-block">
+                    <md-filled-text-field
+                        id="password"
+                        name="password"
+                        label="Password"
+                        type="password">
+                        <md-icon slot="leading-icon">lock</md-icon>
+                    </md-filled-text-field>
+                </div>
 
-                <div class="form-actions">
+                <!-- Accounts created through Google or Microsoft have no password,
+                     so they confirm by signing in again instead (Phase 0C). -->
+                <div id="oauth-block" style="display: none;">
+                    <md-filled-tonal-button type="button" id="reauth-btn">
+                        <md-icon slot="icon">verified_user</md-icon>
+                        Confirm with your provider
+                    </md-filled-tonal-button>
+                </div>
+
+                <div class="form-actions" id="submit-block">
                     <md-filled-button type="submit">
                         Delete Account
                     </md-filled-button>
@@ -185,5 +196,62 @@
         </div>
     </div>
     
+    <script>
+        // Which proof this account can give, and what the server just told us.
+        // The page posts natively, so failures arrive as ?error=<code> rather
+        // than in a response body (Phase 0C).
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const errorEl = document.getElementById("error-msg");
+            const intro = document.getElementById("delete-intro");
+            const passwordBlock = document.getElementById("password-block");
+            const oauthBlock = document.getElementById("oauth-block");
+            const submitBlock = document.getElementById("submit-block");
+            const reauthBtn = document.getElementById("reauth-btn");
+
+            const messages = {
+                password: "That password is not correct. Please try again.",
+                reauth: "Please confirm with your provider before deleting your account."
+            };
+
+            const problem = params.get("error");
+            if (problem) {
+                errorEl.textContent = messages[problem] || "Your account could not be deleted.";
+                errorEl.classList.add("visible");
+            }
+
+            const confirmed = params.get("reauth") === "1";
+
+            fetch("get_profile.php")
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+                    if (data.data.auth_method !== "oauth") return;
+
+                    // No password exists on this account: asking for one could only
+                    // ever fail, which is exactly the bug this replaces.
+                    passwordBlock.style.display = "none";
+                    document.getElementById("password").removeAttribute("name");
+
+                    const provider = data.data.oauth_provider || "";
+                    const label = provider === "microsoft" ? "Microsoft" : provider === "google" ? "Google" : "your provider";
+
+                    if (confirmed) {
+                        intro.textContent = "Identity confirmed. Deleting your account cannot be undone.";
+                        submitBlock.style.display = "";
+                        oauthBlock.style.display = "none";
+                    } else {
+                        intro.textContent = "Confirm with " + label + " to delete your account.";
+                        reauthBtn.textContent = "Confirm with " + label;
+                        oauthBlock.style.display = "";
+                        submitBlock.style.display = "none";
+                        reauthBtn.addEventListener("click", () => {
+                            window.location.href = "oauth_handler.php?provider=" + encodeURIComponent(provider) + "&purpose=delete";
+                        });
+                    }
+                })
+                .catch(() => { /* leave the password form as the default */ });
+        })();
+    </script>
 </body>
 </html>

@@ -138,6 +138,38 @@ if (empty($email)) {
     pista_oauth_fail($provider . ' profile carried no email address (HTTP ' . $profile_status . ')');
 }
 
+// Re-authentication for account deletion: prove the person at the keyboard still
+// controls the provider account, then hand back to delete_account.php. This branch
+// creates nothing, logs nobody in and touches no session identity -- the only
+// destructive file stays delete_account.php (Phase 0C).
+if (($_SESSION['oauth_purpose'] ?? 'login') === 'delete') {
+    unset($_SESSION['oauth_purpose']);
+
+    if (!isset($_SESSION['user_id'])) {
+        pista_oauth_fail($provider . ': delete re-authentication with no session');
+    }
+
+    $current_id = (int) $_SESSION['user_id'];
+    $who = $conn->prepare("SELECT email FROM users WHERE user_id = ?");
+    $who->bind_param("i", $current_id);
+    $who->execute();
+    $row = $who->get_result()->fetch_assoc();
+    $who->close();
+
+    // The returning identity must be the logged-in account, or a second provider
+    // account would be able to authorise someone else's deletion.
+    if (!$row || strcasecmp((string) $row['email'], $email) !== 0) {
+        pista_oauth_fail($provider . ': delete re-authentication identity mismatch');
+    }
+
+    // Short-lived proof. delete_account.php refuses anything older than five
+    // minutes, so a stale tab cannot authorise a deletion later.
+    $_SESSION['reauth_ok_at'] = time();
+
+    header('Location: DeleteAccount.html?reauth=1');
+    exit();
+}
+
 // Database Transaction
 $user_id = null;
 $fullname = $name;
