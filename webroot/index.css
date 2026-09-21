@@ -582,6 +582,43 @@ html, body {
     }
 }
 
+/* Below 768px there was nothing at all until Phase 0D session 2, and the top nav
+   does not fit. Seven controls at Material's 48px minimum touch target with 4px
+   gaps need about 360px; a 360px phone leaves about 344px once the nav's own
+   insets are counted. Exactly one control has to give.
+
+   The theme toggle is the one that loses nothing: theme.js already falls back to
+   prefers-color-scheme, and account.html carries its own "Toggle Theme" item. The
+   remaining six fit with room to spare. The Sign In button goes icon-only through
+   the .nav-label rule in the block above -- it already carries a login icon. */
+@media (max-width: 480px) {
+    .top-nav {
+        left: 8px;
+        right: 8px;
+    }
+
+    .top-nav > div {
+        gap: 4px;
+    }
+
+    /* 48px is Material's minimum touch target. Do not shrink these further to fit
+       another control in -- drop a control instead. */
+    .circle {
+        width: 48px;
+        height: 48px;
+        --md-filled-tonal-button-container-shape: 48px;
+    }
+
+    .icontext {
+        height: 48px;
+        min-width: 48px !important;
+    }
+
+    .circle[data-theme-toggle] {
+        display: none;
+    }
+}
+
 /* The search card in landscape -- TWO problems, not one (Phase 0D).
    The block above is width-based, so on a normal phone held sideways (844 x 390)
    it does not apply at all: .card keeps its desktop rule (position: absolute;
