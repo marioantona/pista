@@ -178,22 +178,35 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
 
             } else {
                 // 🟢 FLOATING LOGIC: Explore AND check mandatory destinations simultaneously!
-                
+
+                // Which hubs the hop-0 batch will price is worked out HERE, outside
+                // the promise, because the mandatory-destination branch below is
+                // fired at the same instant and has to know what the batch already
+                // covers. That is only possible because regionHubs is a hardcoded
+                // constant -- no round trip is needed to answer it (Phase 0C s4).
+                const useHubBypass = hop === 0 && travelRegion !== "any" && !!regionHubs[travelRegion]
+
+                // Filter out already visited or avoided hubs
+                const validHubs = useHubBypass
+                    ? regionHubs[travelRegion].filter(hubIata => {
+                        if (itinerary.path.includes(hubIata)) return false
+                        const hubData = getAirportData(hubIata)
+                        if (hubData && avoidCountries.includes(hubData.country)) return false
+                        return true
+                    }).slice(0, 7) // hard cap of 7 for API
+                    : []
+
+                // Tested against the SLICED list on purpose: a mandatory hub sitting
+                // past the 7-hub cap is NOT in the batch and still needs its own call.
+                const coveredByBatch = new Set(validHubs)
+
                 // Part A: Explore Branch (Wrapped in a promise)
                 const explorePromise = (async () => {
                     try {
                         // 🚀 ONLY USE Hub Bypass on Hop 0 to get them into the region!
-                        if (hop === 0 && travelRegion !== "any" && regionHubs[travelRegion]) {
+                        if (useHubBypass) {
 
                             console.log(`[ENTRY HUB BYPASS] Batch checking up to 7 hubs for ${travelRegion}`)
-
-                            // Filter out already visited or avoided hubs
-                            const validHubs = regionHubs[travelRegion].filter(hubIata => {
-                                if (itinerary.path.includes(hubIata)) return false
-                                const hubData = getAirportData(hubIata)
-                                if (hubData && avoidCountries.includes(hubData.country)) return false
-                                return true
-                            }).slice(0, 7) // hard cap of 7 for API
 
                             if (validHubs.length === 0) return []
 
@@ -212,12 +225,22 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
 
                             // COMPROMISE - BEAM REPAIR LOGIC
                             const foundHubs = Object.keys(bestPerHub)
-                            if (foundHubs.length < beamWidth) {
+                            {
                                 // Find which hubs we asked for, but Google ignored
                                 const missingHubs = validHubs.filter(hub => !foundHubs.includes(hub))
 
-                                // Only fetch enough to fulfill the beam width
-                                const hubsToFetch = missingHubs.slice(0, beamWidth - foundHubs.length)
+                                // A mandatory destination is repaired WHENEVER the batch
+                                // omitted it -- not only when the beam is short, which used
+                                // to skip repair entirely once enough hubs came back. Its
+                                // own call was skipped on the strength of this batch
+                                // covering it, so this is what makes that skip safe, and it
+                                // costs no more than the call it replaced.
+                                const missingMandatory = missingHubs.filter(hub => unvisitedMandatory.includes(hub))
+                                const missingOther = missingHubs.filter(hub => !unvisitedMandatory.includes(hub))
+
+                                // Everything else still only fetches enough to fill the beam.
+                                const otherSlots = Math.max(0, beamWidth - foundHubs.length - missingMandatory.length)
+                                const hubsToFetch = [...missingMandatory, ...missingOther.slice(0, otherSlots)]
 
                                 if (hubsToFetch.length > 0) {
                                     console.log(`[BEAM REPAIR] Batch starved. Fetching ${hubsToFetch.length} missing hubs individually`)
@@ -307,8 +330,13 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                     }
                 })();
 
-                // Part B: Specific Mandatory Branches
-                const specificPromises = unvisitedMandatory.map(async (targetDest) => {
+                // Part B: Specific Mandatory Branches -- minus whatever the hop-0 hub
+                // batch is already pricing. Same engine, same pair, same date, so a
+                // second call would buy nothing; it would only produce a second
+                // candidate with an identical path, which is where the duplicate
+                // itineraries came from (Phase 0C session 4).
+                const specificTargets = unvisitedMandatory.filter(dest => !coveredByBatch.has(dest))
+                const specificPromises = specificTargets.map(async (targetDest) => {
                     try {
                         console.log(`[FLOATING CHECK] Checking price for early jump to: ${targetDest}`);
                         const specificFlight = await fetchReturnFlight(currentAirport, targetDest, currentDate, region, currency, adults, children);
