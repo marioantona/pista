@@ -339,6 +339,22 @@ md-filled-text-field, md-outlined-select {
     color: var(--md-sys-color-primary); /* Makes the total cost pop in purple! */
 }
 
+/* The unavailable-flights banner. It was an inline style with width: 100% and
+   padding: 4px 12px and no box-sizing, so it rendered 24px wider than the card and
+   overlapped its right edge -- on desktop as well as mobile, for as long as it has
+   existed (Phase 0D session 4). */
+.trip-warning {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+    background-color: #FFDAD6;
+    color: #BA1A1A;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
 /* The trip card's header row and its buttons. These were inline styles inside
    itineraries.js's template, so no media query could reach them and five controls
    ran off the right of a phone -- the same lesson as the asides in session 1,

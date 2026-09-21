@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Add Warning banner if itinerary contains unavailable flights
             const warningBannerHtml = currentTotal == -1 ?
-                `<div style="width: 100%; background-color: #FFDAD6; color: #BA1A1A; padding: 4px 12px; font-size: 12px; border-radius: 6px; margin-bottom: 8px; font-weight: bold;">
+                `<div class="trip-warning">
                     ⚠️ Warning: Some flights are no longer available.
                 </div>` : ""
 
