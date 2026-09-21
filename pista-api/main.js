@@ -158,6 +158,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                             path: [...itinerary.path, targetDest],
                             dates: [...itinerary.dates, currentDate],
                             totalCost: itinerary.totalCost + specificFlight.price,
+                            source: 'flights',
                             flights: [...itinerary.flights, {
                                 from: currentAirport,
                                 to: targetDest,
@@ -270,6 +271,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                                     path: [...itinerary.path, hub],
                                     dates: [...itinerary.dates, currentDate],
                                     totalCost: itinerary.totalCost + flight.price,
+                                    source: 'flights',
                                     flights: [...itinerary.flights, {
                                         from: currentAirport,
                                         to: hub,
@@ -311,6 +313,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                                     path: [...itinerary.path, dest.destination_airport.code],
                                     dates: [...itinerary.dates, currentDate],
                                     totalCost: itinerary.totalCost + dest.flight_price,
+                                    source: 'explore',
                                     flights: [...itinerary.flights, {
                                         from: currentAirport,
                                         to: dest.destination_airport.code,
@@ -344,6 +347,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                             path: [...itinerary.path, targetDest],
                             dates: [...itinerary.dates, currentDate],
                             totalCost: itinerary.totalCost + specificFlight.price,
+                            source: 'flights',
                             flights: [...itinerary.flights, {
                                 from: currentAirport,
                                 to: targetDest,
@@ -377,6 +381,35 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
             }
             throw new Error("No valid routes found to continue the itinerary. Constraints may be too strict.");
         }
+
+        // --- ONE CANDIDATE PER PATH ---
+        //
+        // Two branches can build the same route on the same day: the explore call
+        // and the mandatory-destination call fire simultaneously and do not know
+        // about each other. Identical candidates used to take a beam slot EACH,
+        // which cost the search a real expansion call at every later hop and halved
+        // the number of genuine alternatives it carried (Phase 0C session 4).
+        //
+        // Which copy survives is a decision, not a detail. google_flights is the
+        // engine that actually sells the ticket; google_travel_explore's price is an
+        // estimate from a different engine whose reliability is a known open
+        // question. Preferring the cheaper copy would quietly favour that estimate
+        // and show a price the booking engine does not offer, so the authoritative
+        // one wins first and cost only breaks a tie between equals.
+        const bestByPath = new Map()
+        for (const candidate of nextCandidates) {
+            const key = candidate.path.join(',')
+            const incumbent = bestByPath.get(key)
+            if (!incumbent) {
+                bestByPath.set(key, candidate)
+                continue
+            }
+            const better = candidate.source !== incumbent.source
+                ? candidate.source === 'flights'
+                : candidate.totalCost < incumbent.totalCost
+            if (better) bestByPath.set(key, candidate)
+        }
+        nextCandidates = [...bestByPath.values()]
 
         // --- 🌟 STRATIFIED BEAM PRUNING 🌟 ---
         
@@ -506,7 +539,12 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
                             airline: returnFlight.airline,
                             airline_logo: returnFlight.airline_logo
                         }],
-                        fulfilledCount: undefined
+                        // Both are internal bookkeeping: the constraint counter used by
+                        // the stratified pruning, and the engine tag used to decide which
+                        // copy of a duplicated path survives. JSON.stringify drops
+                        // undefined, so neither reaches the browser.
+                        fulfilledCount: undefined,
+                        source: undefined
                     })
                 }
             })
