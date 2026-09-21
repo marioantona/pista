@@ -540,6 +540,7 @@ html, body {
         width: 92%;
         max-width: none;
         max-height: 50vh; /* don't let it cover more than half the screen */
+        max-height: 50dvh; /* ...measured against the visible viewport, not the URL-bar-less one */
         overflow-y: auto; /* allow scrolling inside the card */
         box-shadow: 0 1px 3px 0.1px rgba(0,0,0,0.2), inset 0 -15px 15px -15px rgba(0,0,0,0.2);
     }

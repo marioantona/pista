@@ -47,7 +47,11 @@ body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--md-sys-color-surface);
     display: flex;
+    /* dvh, not vh: on a phone the URL bar makes the visible viewport shorter than
+       100vh claims, so a vh-sized body is taller than the screen. The vh line stays
+       first as the fallback for a browser without dvh (Phase 0D). */
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
