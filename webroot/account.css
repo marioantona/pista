@@ -242,6 +242,15 @@ md-filled-tonal-button {
     gap: 20px;
     background: var(--pista-form-bg);
     padding: 32px;
+    /* width: 100% PLUS 64px of padding rendered this 64px wider than its column.
+       main centres it, and a flex item wider than its line overflows in BOTH
+       directions -- so on a 360px screen the left rounded corner sat ~32px
+       off-screen where nothing could scroll to it, which is why the card looked
+       rounded on the right and square on the left. The same overflow widened the
+       document, which is what made the sidebar look off-centre despite having
+       equal margins: it was centred on the viewport, not on the scrollable area.
+       One declaration, two symptoms (Phase 0D session 3). */
+    box-sizing: border-box;
     border-radius: 24px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }

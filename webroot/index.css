@@ -480,6 +480,11 @@ html, body {
     padding: clamp(24px, 5vw, 48px);
     width: 100%;
     max-width: 440px;
+    /* Same defect as account.css's .form-container, on the modal every guest
+       meets: width: 100% plus padding overflowed the phone. auth.css's copy of
+       this card already had it -- the same drift that left DeleteAccount.html
+       without it (Phase 0D session 3). */
+    box-sizing: border-box;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     color: white;
 }
