@@ -1,0 +1,140 @@
+/* The three auth sub-pages: ForgotPass.html, ResetPass.html, DeleteAccount.html.
+ *
+ * Until Phase 0D session 2 this lived as three inline <style> blocks. ForgotPass
+ * and ResetPass were byte-identical; DeleteAccount had drifted in three ways, two
+ * of which were bugs it had simply missed -- a fixed padding: 48px with no
+ * box-sizing, which made its card 96px wider than its container on a phone.
+ *
+ * These pages are FIXED DARK: a frosted card over a photograph, with no
+ * [data-theme] rules anywhere. They do not follow the light/dark toggle, which is
+ * why their logo must stay the white-ink variant and must NOT carry
+ * data-pista-logo -- see the note in index.css's sibling pages and RUNBOOK §10.
+ */
+
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Roboto, sans-serif;
+    overflow: hidden;
+    background: black;
+}
+
+.back-button {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 1000;
+}
+
+.back-button md-filled-tonal-button {
+    height: 45px;
+    /* Frosted Glass Look */
+    --md-filled-tonal-button-container-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    /* Lock all text/icon states to white to prevent black flash*/
+    --md-filled-tonal-button-label-text-color: #ffffff;
+    --md-filled-tonal-button-icon-color: #ffffff;
+    --md-filled-tonal-button-hover-label-text-color: #ffffff;
+    --md-filled-tonal-button-hover-icon-color: #ffffff;
+    --md-filled-tonal-button-pressed-label-text-color: #ffffff;
+    --md-filled-tonal-button-pressed-icon-color: #ffffff;
+    --md-filled-tonal-button-focus-label-text-color: #ffffff;
+    --md-filled-tonal-button-focus-icon-color: #ffffff;
+
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 20px;
+}
+
+.earth-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: url("./pictures/earth.jpg") center / cover no-repeat;
+}
+
+.auth-card {
+    z-index: 2;
+    background: rgba(20, 16, 30, 0.75);
+    backdrop-filter: blur(12px);
+    border-radius: 28px;
+    padding: clamp(24px, 5vw, 48px);
+    width: 100%;
+    max-width: 440px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.logo h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    margin: 0;
+    color: white;
+}
+
+.logo p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form md-filled-text-field {
+    width: 100%;
+}
+
+.form-actions md-filled-button {
+    width: 100%;
+    height: 52px;
+}
+
+.message {
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+}
+
+.error-message {
+    color: #FF5449;
+    background: rgba(255,84,73,0.12);
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    text-align: center;
+}
+
+.error-message.visible {
+    display: block;
+}
+
+.success-message {
+    color: #4CAF50;
+    background: rgba(76,175,80,0.12);
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    text-align: center;
+}
+
+.success-message.visible {
+    display: block;
+}
