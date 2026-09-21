@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/session.php';
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // Ensure the user is logged in
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     echo json_encode(["success" => false, "error" => "Not logged in"]);
     exit();
 }
-
-$user_id = $_SESSION["user_id"];
 
 // Get the JSON data from the frontend
 $json = file_get_contents("php://input");

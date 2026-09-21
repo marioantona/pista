@@ -7,6 +7,7 @@ require_once __DIR__ . '/session.php';
 include("configure.php");
 require_once __DIR__ . '/client_ip.php';
 require_once __DIR__ . '/rate_limit.php';
+require_once __DIR__ . '/auth.php';
 
 header('Content-Type: application/json');
 
@@ -101,7 +102,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             session_regenerate_id(true);
 
             //echo ("Successful login");
-            $_SESSION["user_id"] = $user_id;
+            // Records WHEN this session authenticated, which is what a password
+            // reset later invalidates against (auth.php, Phase 0C).
+            pista_mark_authenticated($user_id);
             // Displaying the name 
             $namestmt = $conn->prepare("SELECT fullname FROM users WHERE user_id = ?");
             $namestmt->bind_param("i", $user_id);
@@ -136,6 +139,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $lang = $lang_row["lang"];
             }
             $lang_stmt->close();
+
+            // "Remember me" now means it: a database-backed token re-establishes
+            // the session after the browser closes. Before Phase 0C it only
+            // stretched the convenience cookies, so a returning visitor was
+            // greeted by name and then treated as a guest.
+            if (isset($_POST["remember"])) {
+                pista_issue_remember_token($conn, $user_id);
+            }
 
             // Calculate cookie expiration based on "Remember Me" - if true valid for 30 days otherwise 1 day
             $cookie_time = isset($_POST["remember"]) ? time() + (86400 * 30) : time() + (86400 * 1);

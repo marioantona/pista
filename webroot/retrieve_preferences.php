@@ -5,6 +5,7 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 header('Content-Type: application/json');
 
@@ -12,13 +13,13 @@ header('Content-Type: application/json');
 // follow the 302 and try to parse index.html. Emitting null matches the
 // existing "user has no preferences saved" response shape, so any caller
 // already handling that branch degrades cleanly.
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     http_response_code(401);
     echo json_encode(null);
     exit();
 }
 
-$user_id = $_SESSION["user_id"];
 
 // Retrieving the data from the database
 $stmt = $conn->prepare("SELECT * FROM preferences WHERE user_id = ?");

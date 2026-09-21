@@ -5,15 +5,16 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // Ensure the user is actually logged in before trying to read the session
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     echo json_encode([]);
     exit;
 }
 
 // $user_id = 1;
-$user_id = $_SESSION["user_id"];
 
 // Getting the itineraries form the database
 $itin_stmt = $conn->prepare("SELECT * FROM itineraries WHERE user_id = ?");

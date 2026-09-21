@@ -12,6 +12,7 @@ require_once __DIR__ . '/session.php';
 
 require_once 'oauth_config.php';
 require_once 'configure.php'; // Assuming this holds your $conn / DB connection
+require_once __DIR__ . '/auth.php';
 
 // Every failure below takes this path: a generic redirect for the user, the detail
 // for the operator. Until Phase 0B item 8 these were die() calls that printed
@@ -214,7 +215,7 @@ session_regenerate_id(true);
 // from passing the CSRF check a second time.
 unset($_SESSION['oauth_state']);
 
-$_SESSION["user_id"] = $user_id;
+pista_mark_authenticated($user_id);
 
 $pref_stmt = $conn->prepare("SELECT region, unit, currency FROM preferences WHERE user_id = ?");
 $pref_stmt->bind_param("i", $user_id);
@@ -241,7 +242,11 @@ if ($lang_row = $lang_result->fetch_assoc()) {
 }
 $lang_stmt->close();
 
-// OAuth is inherently high-trust, so we default to a 30-day "Remember Me" cookie duration
+// OAuth is inherently high-trust, so we default to a 30-day "Remember Me" cookie
+// duration -- and, since Phase 0C, to a real remember token to match, so the
+// 30 days are not just a name in a cookie.
+pista_issue_remember_token($conn, $user_id);
+
 $cookie_time = time() + (86400 * 30);
 
 pista_set_client_cookie("user_id", $user_id, $cookie_time);

@@ -13,7 +13,11 @@ CREATE TABLE IF NOT EXISTS users (
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     credits_remaining INT DEFAULT 10,
     reset_token_hash VARCHAR(64) NULL DEFAULT NULL,
-    reset_token_expires_at DATETIME NULL DEFAULT NULL
+    reset_token_expires_at DATETIME NULL DEFAULT NULL,
+    -- Phase 0C: every session created before this moment is refused. A password
+    -- reset sets it to NOW(), which is how "reset me out of everywhere" works
+    -- without a session store PHP can enumerate. NULL means "nothing revoked".
+    sessions_valid_after DATETIME NULL DEFAULT NULL
 );
 
 -- details (Personal Information)
@@ -100,4 +104,35 @@ CREATE TABLE IF NOT EXISTS refunds (
     calls_spent INT UNSIGNED NOT NULL DEFAULT 0,
     refunded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_subject_time (subject, refunded_at)
+);
+
+-- remember_tokens (Authentication) -- Phase 0C, real "remember me"
+-- Split selector/validator: the SELECTOR is looked up, the VALIDATOR is compared
+-- with hash_equals against its SHA-256. A stolen database therefore yields no
+-- usable cookie, and the lookup never depends on comparing secrets.
+-- Every use ROTATES the pair; a selector presented with the wrong validator means
+-- the cookie was copied, so all of that user's tokens are revoked.
+-- The cookie is httponly -- unlike the five convenience cookies, this one IS a
+-- credential. ON DELETE CASCADE ties tokens to the account's lifetime.
+-- Created as root (sudo mysql) -- pista_user has no DDL.
+CREATE TABLE IF NOT EXISTS remember_tokens (
+    selector CHAR(24) NOT NULL PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    validator_hash CHAR(64) NOT NULL,
+    -- The SELECTOR is stable for the token's life and only the VALIDATOR rotates.
+    -- That is what makes theft detectable: a copied cookie eventually presents an
+    -- old validator against a selector that still exists, which a legitimate
+    -- holder never does. Deleting and re-issuing instead would make a replay look
+    -- like an unknown selector -- indistinguishable from a stale cookie.
+    -- previous_validator_hash + rotated_at are the grace window: this frontend
+    -- fires several endpoints at once, so a request that started before a
+    -- rotation must not be mistaken for a thief.
+    previous_validator_hash CHAR(64) NULL DEFAULT NULL,
+    rotated_at DATETIME NULL DEFAULT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_used_at DATETIME NULL DEFAULT NULL,
+    KEY idx_user (user_id),
+    KEY idx_expires (expires_at),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );

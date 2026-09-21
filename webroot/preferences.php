@@ -5,15 +5,16 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // See details.php -- native form post, so redirect rather than JSON.
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     header("Location: index.html");
     exit();
 }
 
 // Getting the data from each of the variables 
-$user_id = $_SESSION["user_id"];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Making a variable for all of the different preferences

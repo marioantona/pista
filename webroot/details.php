@@ -5,19 +5,20 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // Reject unauthenticated requests before touching $_SESSION or the database.
 // Without this, $user_id is NULL and the INSERT fails on the foreign key,
 // producing a 500 and a stack of log noise. This form posts natively (see
 // account.html), so the correct response is a redirect, not JSON.
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     header("Location: index.html");
     exit();
 }
 
 
 // Getting the data from each of the variables
-$user_id = $_SESSION["user_id"];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Making a variable for all of the different details

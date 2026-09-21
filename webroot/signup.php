@@ -3,6 +3,7 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 header('Content-Type: application/json');
 
@@ -114,7 +115,7 @@ $new_user_id = $stmt->insert_id;
 // Session fixation defence -- see login.php
 session_regenerate_id(true);
 
-$_SESSION["user_id"] = $new_user_id;
+pista_mark_authenticated($new_user_id);
 
 // Can edit the amount of time that the cookie is valid for in seconds
 $cookie_time = time() + (86400 * 3);

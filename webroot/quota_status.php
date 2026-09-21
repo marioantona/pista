@@ -11,14 +11,16 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/auth.php';
 
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => 'Database connection failed.']);
     exit;
 }
 
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
+$user_id = pista_current_user($conn);
+
+if ($user_id !== null) {
     $stmt = $conn->prepare("SELECT credits_remaining FROM users WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();

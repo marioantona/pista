@@ -88,6 +88,53 @@ if (!function_exists('pista_clear_client_cookie')) {
 }
 
 // ---------------------------------------------------------------------------
+// The "remember me" cookie.
+//
+// Unlike the five convenience cookies above, this one IS a credential: it stands
+// in for a password once the session cookie is gone. So it is httponly -- no
+// script ever needs to read it -- and it lives here only because setcookie()
+// belongs in this file (the invariant hook enforces that).
+//
+// The value is "<selector>:<validator>". auth.php owns what those mean and how
+// they rotate; this function only knows how to put one in a browser.
+// ---------------------------------------------------------------------------
+if (!defined('PISTA_REMEMBER_COOKIE')) {
+    define('PISTA_REMEMBER_COOKIE', 'pista_remember');
+    define('PISTA_REMEMBER_DAYS', 30);
+    // Rotate the validator at most this often, and keep accepting the retired one
+    // for this long. The frontend loads several endpoints at once, so without a
+    // grace window a concurrent request would look like a stolen cookie.
+    define('PISTA_REMEMBER_ROTATE_SECONDS', 60);
+    define('PISTA_REMEMBER_GRACE_SECONDS', 120);
+}
+
+if (!function_exists('pista_set_remember_cookie')) {
+    function pista_set_remember_cookie(string $value, int $expires)
+    {
+        setcookie(PISTA_REMEMBER_COOKIE, $value, [
+            'expires'  => $expires,
+            'path'     => '/',
+            'secure'   => true,
+            'httponly' => true,    // NOT like the convenience cookies: this is auth
+            'samesite' => 'Lax'    // Lax for the same OAuth-callback reason as PHPSESSID
+        ]);
+    }
+}
+
+if (!function_exists('pista_clear_remember_cookie')) {
+    function pista_clear_remember_cookie()
+    {
+        setcookie(PISTA_REMEMBER_COOKIE, '', [
+            'expires'  => time() - 42000,
+            'path'     => '/',
+            'secure'   => true,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Full logout: clear server-side session data, expire the session cookie
 // itself, then destroy the session.
 //

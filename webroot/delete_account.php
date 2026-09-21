@@ -5,15 +5,16 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // Guard both the session and the POST field. Without the second check, a GET
 // to this URL raises an undefined-index warning before any auth logic runs.
-if (!isset($_SESSION["user_id"]) || !isset($_POST["password"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null || !isset($_POST["password"])) {
     header("Location: index.html");
     exit();
 }
 
-$user_id = $_SESSION["user_id"];
 $password = $_POST["password"];
 
 // Making so the user has to input their password to delete their account

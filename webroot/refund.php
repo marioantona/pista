@@ -23,6 +23,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/api_token.php';
 
 // Failure-refunds allowed per subject per calendar month. Generous for the real
@@ -55,11 +56,10 @@ if ($claims === null) {
 
 // Who is asking, and who was the receipt issued to? These must be the same, or a
 // receipt would be a bearer instrument redeemable by whoever holds it.
-if (isset($_SESSION['user_id'])) {
-    $user_id = (int) $_SESSION['user_id'];
+$user_id = pista_current_user($conn);
+if ($user_id !== null) {
     $subject = 'u:' . $user_id;
 } else {
-    $user_id = null;
     $guest_ip = pista_client_ip();
     $subject = 'g:' . hash('sha256', $guest_ip);
 }

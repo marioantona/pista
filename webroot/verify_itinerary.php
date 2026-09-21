@@ -1,14 +1,17 @@
 <?php
 require_once __DIR__ . '/session.php';
+require_once __DIR__ . '/configure.php';
+require_once __DIR__ . '/auth.php';
 header('Content-Type: application/json');
 
-// Ensure user is logged in (we only verify saved trips for logged-in users)
-if (!isset($_SESSION['user_id'])) {
+// Ensure user is logged in (we only verify saved trips for logged-in users).
+// pista_current_user() also resumes a remember-me session and refuses one that a
+// password reset has invalidated, so it needs $conn -- hence the includes above.
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     echo json_encode(['success' => false, 'error' => 'Must be logged in to verify prices.']);
     exit;
 }
-
-$user_id = $_SESSION['user_id'];
 
 // Only itinerary_id is read from the request. Everything sent to Node -- the
 // flights, region, currency and passenger counts -- comes from the database.
@@ -24,7 +27,6 @@ if ($itinerary_id === false) {
     exit;
 }
 
-require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/api_token.php';
 
 // configure.php die()s on a failed connection before this file resumes, so the

@@ -5,16 +5,16 @@ require_once __DIR__ . '/session.php';
 
 // Connecting to the database
 include("configure.php");
+require_once __DIR__ . '/auth.php';
 
 // Set JSON header immediately
 header('Content-Type: application/json');
 
-if (!isset($_SESSION["user_id"])) {
+$user_id = pista_current_user($conn);
+if ($user_id === null) {
     echo json_encode(["success" => false, "error" => "User not authenticated."]);
     exit();
 }
-
-$user_id = $_SESSION["user_id"];
 
 // Getting the raw JSON input from JS fetch
 $json = file_get_contents("php://input");

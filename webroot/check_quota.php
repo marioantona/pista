@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/configure.php';
 require_once __DIR__ . '/client_ip.php';
+require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/api_token.php';
 require_once __DIR__ . '/search_cost.php';
 
@@ -44,8 +45,8 @@ $search_cost = $cost['credits'];
 $claims = ['n' => $n, 'd' => $d, 'cr' => $search_cost];
 
 // Registered user logic
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
+$user_id = pista_current_user($conn);
+if ($user_id !== null) {
 
     // Check and deduct in ONE statement. The old SELECT-then-UPDATE let two
     // parallel searches both read the same balance, both pass the check and both

@@ -59,17 +59,23 @@ try {
     // which algorithm a password was stored under.
     $password_hash = password_hash($new_password, PASSWORD_DEFAULT);
 
-    // Update password and invalidate token
-    $updateStmt = $pdo->prepare("UPDATE users SET password = :password, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE user_id = :id");
+    // Update password, invalidate the token, and cut every existing session loose.
+    //
+    // sessions_valid_after is the whole mechanism: PHP's sessions are files this
+    // code cannot enumerate, so instead of deleting them, each session records when
+    // it authenticated and auth.php refuses any that predate this moment. Someone
+    // resetting BECAUSE they suspect compromise now actually ejects the attacker.
+    $updateStmt = $pdo->prepare("UPDATE users SET password = :password, reset_token_hash = NULL, reset_token_expires_at = NULL, sessions_valid_after = NOW() WHERE user_id = :id");
     $updateStmt->execute([
         'password' => $password_hash,
         'id' => $user['user_id']
     ]);
 
-    // NOT invalidating existing sessions here is deliberate and scheduled, not missed:
-    // Phase 0C owns it (docs/RUNBOOK.md section 15). Someone resetting BECAUSE they
-    // suspect compromise currently leaves the attacker logged in, and fixing that needs
-    // session-store work rather than a line here.
+    // Remember tokens survive a closed browser, so they must be revoked explicitly
+    // -- otherwise the attacker's "remember me" would outlive the reset. PDO here
+    // because this file is the one PDO consumer; auth.php's helpers take mysqli.
+    $forget = $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = :id");
+    $forget->execute(['id' => $user['user_id']]);
 
     echo json_encode(['success' => true, 'message' => 'Password has been successfully reset.']);
 
