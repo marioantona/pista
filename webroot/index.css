@@ -212,6 +212,11 @@ html, body {
     left: 17px;
     z-index: 1000;
     display: flex;
+    /* The mobile block sets width: 92%, and without this the 32px of padding was
+       added on top of it -- so below 400px the card was wider than the screen.
+       The per-rule invariant cannot see this one: the width is in one rule and the
+       padding in another (Phase 0D session 4). */
+    box-sizing: border-box;
     width: 345px;
     border-radius: 25px;
     padding: 16px;
@@ -391,6 +396,37 @@ html, body {
 /* hide stepper buttons on desktop */
 .stepper-btn {
     display: none;
+}
+
+/* The -/+ wrappers around the four number fields. min-width: 0 is the load-bearing
+   line: a flex item defaults to min-width: auto and refuses to shrink below its
+   content's minimum width, so the date row could not compress and overflowed the
+   card instead. Firefox's date input has a much larger minimum than Chrome's,
+   which is the whole reason this showed on a laptop at 530px and never on an
+   Android phone -- it was never a phone-versus-desktop difference
+   (Phase 0D session 4). */
+.stepper-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.stepper-group.half {
+    width: 50%;
+}
+
+.stepper-group md-outlined-text-field {
+    min-width: 0;
+}
+
+.passenger-field {
+    width: 70px;
+}
+
+.horizontal > md-outlined-text-field,
+.horizontal > md-outlined-select {
+    min-width: 0;
 }
 
 /* Advanced Options Accordion */
@@ -580,6 +616,23 @@ html, body {
 
     .mobile-row {
         flex-direction: row !important;
+        /* Wrap rather than squeeze: the date takes the first line and the two
+           stepper groups share the second, instead of all three fighting over one
+           row that cannot shrink far enough (Phase 0D session 4). */
+        flex-wrap: wrap;
+    }
+
+    /* ...which only helps if the date is willing to take a whole line. */
+    .mobile-row > md-outlined-text-field {
+        flex: 1 1 100%;
+    }
+
+    .mobile-row .stepper-group {
+        flex: 1 1 auto;
+    }
+
+    .mobile-row .stepper-group.half {
+        width: auto;
     }
 
     .checkbox-container {
