@@ -52,6 +52,25 @@ try {
     $failed = true;
 }
 
+// Tombstones only matter inside the period they were written in: once the monthly
+// reset has run, a returning user would have been refilled anyway, so keeping the
+// row would punish them twice. Prior periods go (Phase 0C).
+//
+// This runs AFTER the reset above, and deletes rows from earlier periods only --
+// today's own deletions are left alone, since this script runs on the 1st and a
+// tombstone written today belongs to the period just starting.
+try {
+    $period = date('Y-m');
+    $tomb = $conn->prepare("DELETE FROM account_tombstones WHERE period <> ?");
+    $tomb->bind_param("s", $period);
+    $tomb->execute();
+    echo "[SUCCESS] Old account tombstones cleared ({$tomb->affected_rows} deleted).\n";
+    $tomb->close();
+} catch (mysqli_sql_exception $e) {
+    fwrite(STDERR, "[ERROR] Failed to clear account tombstones: " . $e->getMessage() . "\n");
+    $failed = true;
+}
+
 $conn->close();
 
 // Non-zero exit so the failure is visible to cron and to anyone running this by hand,

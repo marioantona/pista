@@ -30,6 +30,14 @@ const PISTA_EMAIL_MAX = 255;
 const PISTA_SIGNUP_WINDOW = 3600;   // 1 hour
 const PISTA_SIGNUP_LIMIT_IP = 10;
 
+// The monthly allowance a new account starts with -- the same number
+// reset_quotas.php restores, and the schema default for users.credits_remaining.
+const PISTA_DEFAULT_CREDITS = 10;
+// What a signup gets when this IP has already left several tombstones this period:
+// the guest allowance, not nothing, because the address may genuinely be shared.
+const PISTA_GUEST_CREDITS = 2;
+const PISTA_TOMBSTONE_IP_LIMIT = 3;
+
 function pista_signup_fail(string $message): void {
     echo json_encode(["success" => false, "error" => $message]);
     exit();
@@ -116,8 +124,46 @@ if ($already_exists) {
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
 // Preventing SQL injections by using placeholders
-$stmt = $conn->prepare("INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)");
-$stmt->bind_param("sss", $fullname, $email, $hashed_password);
+// What this account starts with. Normally the schema default (10), but deleting an
+// account and signing up again must not refill the quota, so a tombstone from THIS
+// period hands back only what was left (Phase 0C).
+$starting_credits = PISTA_DEFAULT_CREDITS;
+$signup_period = date('Y-m');
+$signup_email_hash = hash('sha256', strtolower($email));
+$signup_ip_hash = hash('sha256', pista_client_ip());
+
+try {
+    $tomb = $conn->prepare("SELECT credits_left FROM account_tombstones WHERE email_hash = ? AND period = ?");
+    $tomb->bind_param("ss", $signup_email_hash, $signup_period);
+    $tomb->execute();
+    $previous = $tomb->get_result()->fetch_assoc();
+    $tomb->close();
+
+    if ($previous) {
+        $starting_credits = (int) $previous['credits_left'];
+    } else {
+        // The address is an exact match; the IP is not -- CGNAT, carriers, campuses
+        // and households share addresses, so this only BOUNDS repetition rather than
+        // claiming identity. An honest household will not reach the limit; someone
+        // rotating addresses stops getting full refills.
+        $count = $conn->prepare("SELECT COUNT(*) AS n FROM account_tombstones WHERE ip_hash = ? AND period = ?");
+        $count->bind_param("ss", $signup_ip_hash, $signup_period);
+        $count->execute();
+        $seen = (int) ($count->get_result()->fetch_assoc()['n'] ?? 0);
+        $count->close();
+
+        if ($seen >= PISTA_TOMBSTONE_IP_LIMIT) {
+            error_log('Signup starting at the guest allowance: ' . $seen . ' tombstones for this IP hash this period');
+            $starting_credits = PISTA_GUEST_CREDITS;
+        }
+    }
+} catch (\Throwable $e) {
+    // Never block a signup over this. The worst case is a full allowance.
+    error_log('Tombstone lookup failed (granting the default): ' . $e->getMessage());
+}
+
+$stmt = $conn->prepare("INSERT INTO users (fullname, email, password, credits_remaining) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("sssi", $fullname, $email, $hashed_password, $starting_credits);
 
 // PHP 8.1+ defaults mysqli to MYSQLI_REPORT_ERROR|MYSQLI_REPORT_STRICT and configure.php
 // never calls mysqli_report(), so execute() THROWS -- it does not return false. The

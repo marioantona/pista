@@ -136,3 +136,26 @@ CREATE TABLE IF NOT EXISTS remember_tokens (
     KEY idx_expires (expires_at),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+-- account_tombstones (Abuse control) -- Phase 0C
+-- Deleting an account and signing up again used to grant a fresh 10 credits,
+-- repeatable without limit. A tombstone remembers what the account had LEFT when
+-- it died, so re-registering the same address inside the same monthly quota period
+-- restores the leftover instead of a full allowance. A later period gets the usual
+-- 10, because the monthly reset would have refilled the account anyway.
+-- Only hashes are stored: sha256 of the lower-cased address and of the validated
+-- client IP, never the values themselves.
+-- The IP is a SOFT cap, not an identity: shared addresses (CGNAT, mobile carriers,
+-- universities, households) mean "same IP" cannot mean "same person". It only
+-- bounds repetition -- past a few tombstones in one period, a new account from that
+-- address starts at the guest allowance rather than 10.
+-- Rows from earlier periods are removed by the monthly reset_quotas.php.
+-- Created as root (sudo mysql) -- pista_user has no DDL.
+CREATE TABLE IF NOT EXISTS account_tombstones (
+    email_hash CHAR(64) NOT NULL PRIMARY KEY,
+    ip_hash CHAR(64) NOT NULL,
+    credits_left INT UNSIGNED NOT NULL,
+    period CHAR(7) NOT NULL,
+    deleted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_ip_period (ip_hash, period)
+);
