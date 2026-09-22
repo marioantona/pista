@@ -171,7 +171,7 @@
                 <div id="origin-autocomplete" class="autocomplete-items"></div>
             </div>
             <div class="horizontal mobile-row">
-                <md-outlined-select id="returnTravelRegion" label="Travel Region" style="flex: 1;" data-i18n="travel-region-label">
+                <md-outlined-select id="returnTravelRegion" label="Travel Region" data-i18n="travel-region-label">
                     <md-select-option value="any" selected>Any / Global</md-select-option>
                     <md-select-option value="mediterranean">Mediterranean</md-select-option>
                     <md-select-option value="western_europe">Western Europe</md-select-option>
@@ -204,26 +204,26 @@
             <div class="horizontal mobile-row">
                 <div class="stepper-group half">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnNumberOfDestinations', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnNumberOfDestinations" label="Destinations*" type="number" value="1" min="1" max="10" style="flex: 1; text-align: center;" data-i18n="num-dest-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnNumberOfDestinations" label="Destinations*" type="number" value="1" min="1" max="10" data-i18n="num-dest-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnNumberOfDestinations', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
                 <div class="stepper-group half">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnDaysPerDestination" label="Days / Leg*" type="number" value="1" min="1" max="20" style="flex: 1; text-align: center;" data-i18n="days-per-dest-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnDaysPerDestination" label="Days / Leg*" type="number" value="1" min="1" max="20" data-i18n="days-per-dest-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnDaysPerDestination', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
             </div>
             <div class="horizontal mobile-row">
-                <md-outlined-text-field id="returnDate" label="Date*" type="date" style="flex: 1;" data-i18n="date-label"></md-outlined-text-field>
+                <md-outlined-text-field id="returnDate" label="Date*" type="date" data-i18n="date-label"></md-outlined-text-field>
 
                 <div class="stepper-group">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnAdult" label="Adult" type="number" value="1" min="1" max="9" style="text-align: center;" class="passenger-field" data-i18n="adult-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnAdult" label="Adult" type="number" value="1" min="1" max="9" class="passenger-field" data-i18n="adult-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnAdult', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
                 <div class="stepper-group">
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', -1)"><md-icon>remove</md-icon></md-icon-button>
-                    <md-outlined-text-field id="returnChild" label="Child" type="number" value="0" min="0" max="8" style="text-align: center;" class="passenger-field" data-i18n="child-label"></md-outlined-text-field>
+                    <md-outlined-text-field id="returnChild" label="Child" type="number" value="0" min="0" max="8" class="passenger-field" data-i18n="child-label"></md-outlined-text-field>
                     <md-icon-button class="stepper-btn" onclick="stepInput('returnChild', 1)"><md-icon>add</md-icon></md-icon-button>
                 </div>
             </div>

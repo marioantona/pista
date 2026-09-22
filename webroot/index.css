@@ -422,6 +422,35 @@ html, body {
 
 .passenger-field {
     width: 70px;
+    text-align: center;
+}
+
+/* Lifted out of index.html's inline styles (Phase 0D session 5). They belong here
+   because an inline style beats every stylesheet rule, so a media query cannot
+   reshape an element that carries one -- which is exactly how the date field
+   broke: session 4's rule to give it its own line lost to a style="flex: 1" left
+   on the element, while the min-width: 0 added alongside it took effect and
+   removed the floor that had been keeping the field usable.
+   The invariant hook now fails the build on any inline style inside a .mobile-row. */
+#returnTravelRegion {
+    flex: 1;
+    min-width: 0;
+}
+
+#returnNumberOfDestinations,
+#returnDaysPerDestination {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+/* Shares its row with the two passenger steppers on desktop; takes a line of its
+   own below 768px -- see the override in that block, which is an ID selector for
+   a reason: `.mobile-row > md-outlined-text-field` is (0,1,1) and would lose to
+   this (1,0,0) rule. */
+#returnDate {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .horizontal > md-outlined-text-field,
@@ -610,8 +639,18 @@ html, body {
     }
 
     /* make desired destinations / avoid countries take full width */
-    #returnDesiredDestinations, #returnDate {
+    #returnDesiredDestinations {
         width: 100% !important;
+    }
+
+    /* The date takes a whole line, so the adult and child steppers share the one
+       below rather than squeezing it. flex-basis, not width: basis governs a flex
+       item's main size, which is why the `width: 100% !important` that used to sit
+       here did nothing but disguise which rule was in charge.
+       Same (1,0,0) specificity as the base rule and later in the file, so this
+       wins -- a media query adds no specificity of its own. */
+    #returnDate {
+        flex-basis: 100%;
     }
 
     .mobile-row {
@@ -716,6 +755,13 @@ html, body {
     #nav-flights,
     #nav-itineraries {
         display: none;
+    }
+
+    /* The card's content box is 0.92W - 32, so 299px at 360px wide. Two stepper
+       groups at 70px want 2 x 158 + 8 = 324px and would be shrunk into truncated
+       labels; at 56px they want 280px and simply fit. */
+    .passenger-field {
+        width: 56px;
     }
 }
 
