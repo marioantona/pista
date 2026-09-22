@@ -25,16 +25,16 @@
     import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
     document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
     </script>
-    <script src="theme.js?v=20260921e"></script>
+    <script src="theme.js?v=20260922a"></script>
     <!-- ?v= forces browsers past their 4-hour cached copy when index.js changes.
          Bump it on every index.js deploy (RUNBOOK §10). -->
     <!-- Classic script, so it runs before the deferred module below and index.js
          can read window.PISTA_COST. Mirrors search_cost.php; see RUNBOOK §12. -->
-    <script src="search_cost.js?v=20260921e"></script>
-    <script type="module" src="index.js?v=20260921e"></script>
-    <link rel="stylesheet" href="index.css?v=20260921e">
+    <script src="search_cost.js?v=20260922a"></script>
+    <script type="module" src="index.js?v=20260922a"></script>
+    <link rel="stylesheet" href="index.css?v=20260922a">
     <!-- Versioned for the same reason: index.js reads keys that older copies lack. -->
-    <script src="i18n.js?v=20260921e" defer></script>
+    <script src="i18n.js?v=20260922a" defer></script>
 </head>
 <body>
     <!-- Leaflet Map Below -->
