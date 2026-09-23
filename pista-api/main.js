@@ -477,14 +477,6 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
 
     const finalDate = addDaysToDate(startDate, numDestinations * daysPerLeg)
     let completedItineraries = []
-    /*
-    let apiCallsMade = 0
-    const MAX_API_CALLS = 6
-
-    //split beam -> try top 3 (beamWidth) simultaneously first
-    const initialBatch = beam.slice(0, beamWidth)
-    const backupBatch = beam.slice(beamWidth)
-    */
 
     // Gather all unique last airports from current beam (Max 7)
     const lastAirports = beam.map(itin => itin.path[itin.path.length - 1])
@@ -583,94 +575,7 @@ async function generateMultiCityItineraries(origin, startDate, numDestinations, 
         return completedItineraries
 
     }
-
-    /*
-    const initialPromises = initialBatch.map(async (itinerary) => {
-        apiCallsMade++;
-        const lastAirport = itinerary.path[itinerary.path.length - 1];
-        try {
-            // 🚨 API CALL 🚨
-            const returnFlight = await fetchReturnFlight(lastAirport, origin, finalDate, region, currency, adults, children);
-        
-            return {
-                ...itinerary,
-                path: [...itinerary.path, origin],
-                dates: [...itinerary.dates, finalDate],
-                totalCost: itinerary.totalCost + returnFlight.price,
-                flights: [...itinerary.flights, {
-                    from: lastAirport,
-                    to: origin,
-                    price: returnFlight.price,
-                    airline: returnFlight.airline,
-                    airline_logo: returnFlight.airline_logo
-                }],
-                // Clean up the temporary tracker before showing to user
-                fulfilledCount: undefined 
-            };
-        } catch (error) {
-            console.log(`⚠️ Warning: Primary return flight failed from ${lastAirport}. Skipping this path.`)
-            return null
-        }
-    })
-
-    const initialResults = await Promise.all(initialPromises)
-
-    // Filter out any paths that failed to find a return flight (the nulls)
-    completedItineraries.push(...initialResults.filter(r => r !== null))
-
-    //fallback loop - if we lost some routes, try backups one by one until we have 3 or hit API limit
-    let backupIndex = 0
-    while (completedItineraries.length < beamWidth && apiCallsMade < MAX_API_CALLS && backupIndex < backupBatch.length) {
-        const itinerary = backupBatch[backupIndex]
-        const lastAirport = itinerary.path[itinerary.path.length - 1]
-        backupIndex++
-        apiCallsMade++
-
-        console.log(`[FALLBACK API CALL] Attempting backup route from ${lastAirport} to recover lost options...`)
-
-        try {
-            const returnFlight = await fetchReturnFlight(lastAirport, origin, finalDate, region, currency, adults, children)
-            completedItineraries.push({
-                ...itinerary,
-                path: [...itinerary.path, origin],
-                dates: [...itinerary.dates, finalDate],
-                totalCost: itinerary.totalCost + returnFlight.price,
-                flights: [...itinerary.flights, {
-                    from: lastAirport,
-                    to: origin,
-                    price: returnFlight.price,
-                    airline: returnFlight.airline,
-                    airline_logo: returnFlight.airline_logo
-                }],
-                fulfilledCount: undefined
-            })
-        } catch (error) {
-            console.log(`Warning: Fallback return flight failed from ${lastAirport}.`)
-        }
-    }
-
-    // Final sort to guarantee the absolute cheapest completed itinerary is at the top
-    completedItineraries.sort((a, b) => a.totalCost - b.totalCost);
-
-    return completedItineraries;
-    */
 }
-
-// --- EXECUTION TEST ---
-// Origin: STN, 2026-04-20, 3 Destinations, 4 Days/Leg, Avoid: Spain, Include: ['BER'] (Berlin)
-
-/*
-generateMultiCityItineraries('BCN', '2026-04-17', 3, 4, [], ['FCO'])
-    .then((itineraries) => {
-        console.log("\n🎉 Success! Here are the top itineraries:")
-        console.dir(itineraries, {depth:null, colors: true})
-    })
-    .catch((error) => {
-        console.error("\n❌ An error occurred during the search:")
-        console.error(error.message)
-    })
-
-*/
 
 module.exports = {
     generateMultiCityItineraries
