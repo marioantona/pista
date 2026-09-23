@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<!-- Template for docs/og-image/render.sh. @@EARTH@@ and @@LOGO@@ are filled in by the script. -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;900&display=block" rel="stylesheet">
+<style>
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; font-family: Roboto, sans-serif; }
+.bg    { position: absolute; inset: 0; background: url("@@EARTH@@") center / cover no-repeat; }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,11,22,.55) 0%, rgba(14,11,22,.35) 45%, rgba(14,11,22,.8) 100%); }
+.wrap  { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.line  { color: #fff; font-size: 34px; font-weight: 500; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+.url   { color: #EADDFF; font-size: 24px; letter-spacing: 1px; }
+</style></head>
+<body>
+<div class="bg"></div><div class="shade"></div>
+<div class="wrap">
+@@LOGO@@
+<div class="line">The cheapest order to fly a multi-city round trip</div>
+<div class="url">pistaflights.com</div>
+</div>
+</body></html>

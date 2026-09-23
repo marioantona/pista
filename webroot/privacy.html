@@ -1,14 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Privacy Policy - PISTA</title>
-    <style>body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PISTA – Privacy Policy</title>
+    <meta name="description" content="What personal data PISTA handles, why, who else receives it, how long it is kept, and your rights." />
+    <link rel="canonical" href="https://pistaflights.com/privacy.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PISTA" />
+    <meta property="og:title" content="PISTA – Privacy Policy" />
+    <meta property="og:description" content="What personal data PISTA handles, why, who else receives it, how long it is kept, and your rights." />
+    <meta property="og:url" content="https://pistaflights.com/privacy.html" />
+    <meta property="og:image" content="https://pistaflights.com/pictures/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The PISTA logo over the Earth seen from orbit, with the line: the cheapest order to fly a multi-city round trip" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" id="pista-favicon" href="pictures/logos/favicon-light.svg" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+    </script>
+    <script type="module">
+        import '@material/web/all.js';
+    </script>
+    <script src="theme.js?v=20260923a"></script>
+    <link rel="stylesheet" href="info.css?v=20260923a" />
+    <script src="i18n.js?v=20260923a" defer></script>
+    <script src="info.js?v=20260923a" defer></script>
 </head>
+
 <body>
-    <h1>Privacy Policy</h1>
-    <p>Last updated: April 2026</p>
-    <p>PISTA Flights respects your privacy. We do not sell your personal data to third parties. We collect basic email and session data purely to save your itineraries and provide our routing service. By using our tool, you consent to basic cookie usage for session management.</p>
-    <a href="index.html">Return to Home</a>
+    <div class="earth-bg"></div>
+    <div class="back-button">
+        <md-filled-tonal-button id="back-btn" data-i18n="nav-back">
+            <md-icon slot="icon">arrow_back</md-icon>
+            Back
+        </md-filled-tonal-button>
+    </div>
+
+    <main class="container">
+        <header class="header">
+            <img class="header-logo" src="pictures/logos/simplified-h-dark.svg" alt="PISTA" />
+            <h1 data-i18n="link-privacy">Privacy Policy</h1>
+        </header>
+
+        <!-- ================================================================ EN -->
+        <article class="legal" data-legal-lang="en" lang="en">
+            <p class="updated">Last updated: 23 September 2026</p>
+
+            <p>PISTA (pistaflights.com) is a free, non-commercial flight search tool built as a portfolio project. This policy explains what personal data it handles, why, who else receives it, and for how long.</p>
+
+            <h2>1. Who is responsible</h2>
+            <p>PISTA is run by Mario Antona, as an individual, who is the controller of the personal data described here. Contact: <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>.</p>
+
+            <h2>2. What PISTA does not do</h2>
+            <ul>
+                <li>It takes no payments and never sees card details. You book and pay on Aviasales.</li>
+                <li>It collects no passport or traveller identity details.</li>
+                <li>It uses no advertising, analytics or tracking cookies, and it does not sell or share your data for advertising.</li>
+            </ul>
+
+            <h2>3. What we collect</h2>
+            <ul>
+                <li><strong>Your account:</strong> your name and email address, and your password stored only as a one-way hash. If you sign in with Google or Microsoft: the name, email address, account identifier and profile picture link that the provider shares.</li>
+                <li><strong>Details you choose to add:</strong> first, middle and last name, date of birth and language. All are optional.</li>
+                <li><strong>Preferences:</strong> search region, currency and distance unit.</li>
+                <li><strong>Saved trips:</strong> airports, dates, prices, airlines and passenger counts, plus your credit balance.</li>
+                <li><strong>Security and fair use:</strong> hashed password-reset and "remember me" tokens; counts of sign-in, sign-up and password-reset attempts, keyed on your IP address and on a hash of the email address used; guest credit usage, keyed on your IP address; and, after an account is deleted, a record keyed on hashes of its email and IP addresses holding the credits it had left, so that deleting and re-creating an account cannot refill them.</li>
+                <li><strong>Server logs:</strong> IP address, time, page requested, referring page and browser type. Error logs may record the IP address of a request that was refused for too many attempts.</li>
+            </ul>
+            <p>A search sends airports, dates, passenger counts, currency and region to our flight data provider. It never sends your name, email address or IP address.</p>
+
+            <h2>4. Why we use it</h2>
+            <ul>
+                <li><strong>To provide the service you ask for</strong> (your account, saved trips, searches and price checks): performance of a contract, GDPR Article 6(1)(b).</li>
+                <li><strong>To keep the service secure and fair</strong> (attempt limits, credits, logs): our legitimate interest in protecting the service and its users, Article 6(1)(f).</li>
+                <li><strong>Optional profile details:</strong> your consent, Article 6(1)(a). You can clear them at any time in My Account.</li>
+            </ul>
+
+            <h2>5. Cookies and browser storage</h2>
+            <p>Every cookie PISTA sets is needed for the site to work or to remember a choice you made. None is used for advertising or analytics.</p>
+            <ul>
+                <li><code>PHPSESSID</code>: keeps you signed in during a visit. Deleted when you close the browser, and ends after 30 minutes of inactivity unless you chose "remember me".</li>
+                <li><code>pista_remember</code>: set only if you tick "remember me". Keeps you signed in on this device for 30 days from your last visit.</li>
+                <li><code>user_id</code>, <code>fullName</code>, <code>region</code>, <code>currency</code>, <code>lang</code>: display settings (your greeting, currency and language), kept for up to 30 days.</li>
+            </ul>
+            <p>Some things are kept in your browser's own storage and are not sent to us:</p>
+            <ul>
+                <li><code>pista_theme</code>: light or dark mode.</li>
+                <li><code>pista_guest_trips</code>: trips saved as a guest. These are sent to us only when you sign in, to move them into your account.</li>
+                <li><code>pista_welcome_shown</code>: whether you have seen the welcome message.</li>
+                <li>Temporary navigation flags in session storage, cleared when you close the tab.</li>
+            </ul>
+
+            <h2>6. Who else receives data</h2>
+            <ul>
+                <li><strong>Cloudflare</strong>: every request passes through its network for security and caching, so it sees your IP address and the pages you request.</li>
+                <li><strong>Oracle Cloud Infrastructure</strong>: hosts our server and database in London, United Kingdom.</li>
+                <li><strong>Brevo</strong>: sends password-reset emails, so it receives the email address.</li>
+                <li><strong>Google and Microsoft</strong>: only if you choose to sign in with them. Their own privacy policies apply.</li>
+                <li><strong>SerpAPI</strong>: fetches Google Flights prices for a search. It receives the search parameters described above and nothing that identifies you.</li>
+                <li><strong>Aviasales (Travelpayouts)</strong>: when you follow a booking link you leave PISTA. The link carries the route, dates, passenger counts, currency and PISTA's affiliate identifier, and Aviasales' own privacy policy applies from there.</li>
+                <li><strong>Google Fonts, jsDelivr (esm.run), unpkg and OpenStreetMap</strong>: your browser downloads fonts, interface components, the map library and map tiles directly from them, so they receive your IP address and browser details.</li>
+            </ul>
+            <p>Some of these providers process data outside the United Kingdom and the European Economic Area, under the safeguards set out in their own terms.</p>
+
+            <h2>7. How long we keep it</h2>
+            <ul>
+                <li><strong>Account data, details, preferences and saved trips:</strong> until you delete your account. Deletion is immediate.</li>
+                <li><strong>Backups:</strong> nightly database backups are kept for up to 8 weeks, so deleted data disappears from them within that time.</li>
+                <li><strong>Password-reset tokens:</strong> 30 minutes. <strong>"Remember me" tokens:</strong> 30 days from last use, or until you sign out.</li>
+                <li><strong>Attempt counters:</strong> deleted after one day.</li>
+                <li><strong>Guest usage and deleted-account records:</strong> cleared on the 1st of every month.</li>
+                <li><strong>Server logs:</strong> 14 days.</li>
+            </ul>
+
+            <h2>8. Your rights</h2>
+            <p>You can ask to access, correct, delete, restrict or port your data, object to how we use it, and withdraw consent for optional details. Most of this you can do yourself in My Account, including deleting your account. For anything else, email <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>; we reply within one month. You can also complain to the data protection authority in the country where you live or work.</p>
+
+            <h2>9. Children</h2>
+            <p>PISTA accounts are not intended for anyone under 16. Child passengers are stored as a number only, never as details about who they are.</p>
+
+            <h2>10. Security</h2>
+            <p>All traffic uses HTTPS. Passwords and tokens are stored only as hashes, and the database is not reachable from the internet.</p>
+
+            <h2>11. Changes</h2>
+            <p>If this policy changes, the date at the top changes with it, and significant changes are noted on this page.</p>
+
+            <p class="note">This policy is available in English, Spanish and Catalan. If the versions differ, the English version prevails.</p>
+        </article>
+
+        <!-- ================================================================ ES -->
+        <article class="legal" data-legal-lang="es" lang="es" hidden>
+            <p class="updated">Última actualización: 23 de septiembre de 2026</p>
+
+            <p>PISTA (pistaflights.com) es un buscador de vuelos gratuito y sin ánimo de lucro, creado como proyecto de portfolio. Esta política explica qué datos personales trata, por qué, quién más los recibe y durante cuánto tiempo.</p>
+
+            <h2>1. Responsable</h2>
+            <p>PISTA lo gestiona Mario Antona, a título particular, que es el responsable del tratamiento de los datos personales descritos aquí. Contacto: <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>.</p>
+
+            <h2>2. Lo que PISTA no hace</h2>
+            <ul>
+                <li>No cobra nada ni ve nunca datos de tarjetas. Reservas y pagas en Aviasales.</li>
+                <li>No recoge datos de pasaporte ni de identidad de los viajeros.</li>
+                <li>No usa cookies de publicidad, analítica ni seguimiento, y no vende ni comparte tus datos con fines publicitarios.</li>
+            </ul>
+
+            <h2>3. Qué datos recogemos</h2>
+            <ul>
+                <li><strong>Tu cuenta:</strong> tu nombre y tu correo electrónico, y tu contraseña guardada solo como hash irreversible. Si inicias sesión con Google o Microsoft: el nombre, el correo, el identificador de cuenta y el enlace a la foto de perfil que comparta el proveedor.</li>
+                <li><strong>Datos que decidas añadir:</strong> nombre, segundo nombre, apellidos, fecha de nacimiento e idioma. Todos son opcionales.</li>
+                <li><strong>Preferencias:</strong> región de búsqueda, moneda y unidad de distancia.</li>
+                <li><strong>Viajes guardados:</strong> aeropuertos, fechas, precios, aerolíneas y número de pasajeros, además de tu saldo de créditos.</li>
+                <li><strong>Seguridad y uso justo:</strong> tokens de restablecimiento de contraseña y de "recuérdame", guardados como hash; recuentos de intentos de inicio de sesión, registro y restablecimiento de contraseña, asociados a tu dirección IP y a un hash del correo usado; el uso de créditos de invitado, asociado a tu dirección IP; y, tras eliminar una cuenta, un registro asociado a hashes de su correo y de su IP con los créditos que le quedaban, para que eliminar y volver a crear una cuenta no los recargue.</li>
+                <li><strong>Registros del servidor:</strong> dirección IP, hora, página solicitada, página de origen y tipo de navegador. Los registros de errores pueden guardar la IP de una petición rechazada por demasiados intentos.</li>
+            </ul>
+            <p>Una búsqueda envía a nuestro proveedor de datos de vuelos los aeropuertos, las fechas, el número de pasajeros, la moneda y la región. Nunca envía tu nombre, tu correo ni tu dirección IP.</p>
+
+            <h2>4. Para qué los usamos</h2>
+            <ul>
+                <li><strong>Para prestar el servicio que pides</strong> (tu cuenta, viajes guardados, búsquedas y comprobaciones de precio): ejecución de un contrato, artículo 6.1.b del RGPD.</li>
+                <li><strong>Para mantener el servicio seguro y justo</strong> (límites de intentos, créditos, registros): nuestro interés legítimo en proteger el servicio y a sus usuarios, artículo 6.1.f.</li>
+                <li><strong>Datos de perfil opcionales:</strong> tu consentimiento, artículo 6.1.a. Puedes borrarlos cuando quieras en Mi Cuenta.</li>
+            </ul>
+
+            <h2>5. Cookies y almacenamiento del navegador</h2>
+            <p>Todas las cookies que usa PISTA son necesarias para que el sitio funcione o para recordar algo que has elegido. Ninguna se usa para publicidad ni analítica.</p>
+            <ul>
+                <li><code>PHPSESSID</code>: mantiene tu sesión durante una visita. Se borra al cerrar el navegador, y la sesión termina tras 30 minutos de inactividad salvo que hayas elegido "recuérdame".</li>
+                <li><code>pista_remember</code>: solo si marcas "recuérdame". Mantiene tu sesión en este dispositivo durante 30 días desde tu última visita.</li>
+                <li><code>user_id</code>, <code>fullName</code>, <code>region</code>, <code>currency</code>, <code>lang</code>: ajustes de visualización (tu saludo, moneda e idioma), guardados hasta 30 días.</li>
+            </ul>
+            <p>Algunos datos se guardan en el almacenamiento de tu propio navegador y no se nos envían:</p>
+            <ul>
+                <li><code>pista_theme</code>: modo claro u oscuro.</li>
+                <li><code>pista_guest_trips</code>: viajes guardados como invitado. Solo se nos envían cuando inicias sesión, para pasarlos a tu cuenta.</li>
+                <li><code>pista_welcome_shown</code>: si ya has visto el mensaje de bienvenida.</li>
+                <li>Indicadores de navegación temporales en el almacenamiento de sesión, que se borran al cerrar la pestaña.</li>
+            </ul>
+
+            <h2>6. Quién más recibe datos</h2>
+            <ul>
+                <li><strong>Cloudflare</strong>: todas las peticiones pasan por su red por seguridad y caché, así que ve tu dirección IP y las páginas que solicitas.</li>
+                <li><strong>Oracle Cloud Infrastructure</strong>: aloja nuestro servidor y nuestra base de datos en Londres, Reino Unido.</li>
+                <li><strong>Brevo</strong>: envía los correos de restablecimiento de contraseña, así que recibe la dirección de correo.</li>
+                <li><strong>Google y Microsoft</strong>: solo si decides iniciar sesión con ellos. Se aplican sus propias políticas de privacidad.</li>
+                <li><strong>SerpAPI</strong>: obtiene los precios de Google Flights para una búsqueda. Recibe los parámetros de búsqueda descritos arriba y nada que te identifique.</li>
+                <li><strong>Aviasales (Travelpayouts)</strong>: al seguir un enlace de reserva sales de PISTA. El enlace incluye la ruta, las fechas, el número de pasajeros, la moneda y el identificador de afiliado de PISTA, y a partir de ahí se aplica la política de privacidad de Aviasales.</li>
+                <li><strong>Google Fonts, jsDelivr (esm.run), unpkg y OpenStreetMap</strong>: tu navegador descarga directamente de ellos las fuentes, los componentes de la interfaz, la librería del mapa y las teselas del mapa, así que reciben tu dirección IP y los datos de tu navegador.</li>
+            </ul>
+            <p>Algunos de estos proveedores tratan datos fuera del Reino Unido y del Espacio Económico Europeo, con las garantías que establecen sus propias condiciones.</p>
+
+            <h2>7. Cuánto tiempo los conservamos</h2>
+            <ul>
+                <li><strong>Datos de la cuenta, perfil, preferencias y viajes guardados:</strong> hasta que elimines tu cuenta. La eliminación es inmediata.</li>
+                <li><strong>Copias de seguridad:</strong> las copias nocturnas de la base de datos se conservan hasta 8 semanas, así que los datos eliminados desaparecen de ellas en ese plazo.</li>
+                <li><strong>Tokens de restablecimiento de contraseña:</strong> 30 minutos. <strong>Tokens de "recuérdame":</strong> 30 días desde el último uso, o hasta que cierres sesión.</li>
+                <li><strong>Recuentos de intentos:</strong> se borran al cabo de un día.</li>
+                <li><strong>Uso de invitados y registros de cuentas eliminadas:</strong> se borran el día 1 de cada mes.</li>
+                <li><strong>Registros del servidor:</strong> 14 días.</li>
+            </ul>
+
+            <h2>8. Tus derechos</h2>
+            <p>Puedes solicitar el acceso, la rectificación, la supresión, la limitación o la portabilidad de tus datos, oponerte a su uso y retirar el consentimiento para los datos opcionales. Casi todo puedes hacerlo tú mismo en Mi Cuenta, incluida la eliminación de la cuenta. Para lo demás, escribe a <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>; respondemos en el plazo de un mes. También puedes presentar una reclamación ante la autoridad de protección de datos del país donde vives o trabajas.</p>
+
+            <h2>9. Menores</h2>
+            <p>Las cuentas de PISTA no están pensadas para menores de 16 años. Los pasajeros menores se guardan solo como un número, nunca con datos sobre quiénes son.</p>
+
+            <h2>10. Seguridad</h2>
+            <p>Todo el tráfico usa HTTPS. Las contraseñas y los tokens se guardan solo como hash, y la base de datos no es accesible desde internet.</p>
+
+            <h2>11. Cambios</h2>
+            <p>Si esta política cambia, la fecha de arriba cambia con ella, y los cambios importantes se indican en esta página.</p>
+
+            <p class="note">Esta política está disponible en inglés, español y catalán. Si las versiones no coinciden, prevalece la versión en inglés.</p>
+        </article>
+
+        <!-- ================================================================ CA -->
+        <article class="legal" data-legal-lang="ca" lang="ca" hidden>
+            <p class="updated">Darrera actualització: 23 de setembre de 2026</p>
+
+            <p>PISTA (pistaflights.com) és un cercador de vols gratuït i sense ànim de lucre, creat com a projecte de portfoli. Aquesta política explica quines dades personals tracta, per què, qui més les rep i durant quant de temps.</p>
+
+            <h2>1. Responsable</h2>
+            <p>PISTA el gestiona Mario Antona, a títol particular, que és el responsable del tractament de les dades personals descrites aquí. Contacte: <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>.</p>
+
+            <h2>2. El que PISTA no fa</h2>
+            <ul>
+                <li>No cobra res ni veu mai dades de targetes. Reserves i pagues a Aviasales.</li>
+                <li>No recull dades de passaport ni d'identitat dels viatgers.</li>
+                <li>No fa servir galetes de publicitat, analítica ni seguiment, i no ven ni comparteix les teves dades amb finalitats publicitàries.</li>
+            </ul>
+
+            <h2>3. Quines dades recollim</h2>
+            <ul>
+                <li><strong>El teu compte:</strong> el teu nom i el teu correu electrònic, i la contrasenya desada només com a hash irreversible. Si inicies sessió amb Google o Microsoft: el nom, el correu, l'identificador de compte i l'enllaç a la foto de perfil que comparteixi el proveïdor.</li>
+                <li><strong>Dades que decideixis afegir:</strong> nom, segon nom, cognoms, data de naixement i idioma. Totes són opcionals.</li>
+                <li><strong>Preferències:</strong> regió de cerca, moneda i unitat de distància.</li>
+                <li><strong>Viatges desats:</strong> aeroports, dates, preus, aerolínies i nombre de passatgers, a més del teu saldo de crèdits.</li>
+                <li><strong>Seguretat i ús just:</strong> tokens de restabliment de contrasenya i de "recorda'm", desats com a hash; recomptes d'intents d'inici de sessió, registre i restabliment de contrasenya, associats a la teva adreça IP i a un hash del correu utilitzat; l'ús de crèdits de convidat, associat a la teva adreça IP; i, després d'eliminar un compte, un registre associat a hashos del seu correu i de la seva IP amb els crèdits que li quedaven, perquè eliminar i tornar a crear un compte no els recarregui.</li>
+                <li><strong>Registres del servidor:</strong> adreça IP, hora, pàgina sol·licitada, pàgina d'origen i tipus de navegador. Els registres d'errors poden desar la IP d'una petició rebutjada per massa intents.</li>
+            </ul>
+            <p>Una cerca envia al nostre proveïdor de dades de vols els aeroports, les dates, el nombre de passatgers, la moneda i la regió. Mai no envia el teu nom, el teu correu ni la teva adreça IP.</p>
+
+            <h2>4. Per a què les fem servir</h2>
+            <ul>
+                <li><strong>Per prestar el servei que demanes</strong> (el teu compte, viatges desats, cerques i comprovacions de preu): execució d'un contracte, article 6.1.b del RGPD.</li>
+                <li><strong>Per mantenir el servei segur i just</strong> (límits d'intents, crèdits, registres): el nostre interès legítim a protegir el servei i els seus usuaris, article 6.1.f.</li>
+                <li><strong>Dades de perfil opcionals:</strong> el teu consentiment, article 6.1.a. Les pots esborrar quan vulguis a El Meu Compte.</li>
+            </ul>
+
+            <h2>5. Galetes i emmagatzematge del navegador</h2>
+            <p>Totes les galetes que fa servir PISTA són necessàries perquè el lloc funcioni o per recordar alguna cosa que has triat. Cap no es fa servir per a publicitat ni analítica.</p>
+            <ul>
+                <li><code>PHPSESSID</code>: manté la sessió durant una visita. S'esborra en tancar el navegador, i la sessió acaba després de 30 minuts d'inactivitat tret que hagis triat "recorda'm".</li>
+                <li><code>pista_remember</code>: només si marques "recorda'm". Manté la sessió en aquest dispositiu durant 30 dies des de la darrera visita.</li>
+                <li><code>user_id</code>, <code>fullName</code>, <code>region</code>, <code>currency</code>, <code>lang</code>: preferències de visualització (la salutació, la moneda i l'idioma), desades fins a 30 dies.</li>
+            </ul>
+            <p>Algunes dades es desen a l'emmagatzematge del teu propi navegador i no se'ns envien:</p>
+            <ul>
+                <li><code>pista_theme</code>: mode clar o fosc.</li>
+                <li><code>pista_guest_trips</code>: viatges desats com a convidat. Només se'ns envien quan inicies sessió, per passar-los al teu compte.</li>
+                <li><code>pista_welcome_shown</code>: si ja has vist el missatge de benvinguda.</li>
+                <li>Indicadors de navegació temporals a l'emmagatzematge de sessió, que s'esborren en tancar la pestanya.</li>
+            </ul>
+
+            <h2>6. Qui més rep dades</h2>
+            <ul>
+                <li><strong>Cloudflare</strong>: totes les peticions passen per la seva xarxa per seguretat i memòria cau, així que veu la teva adreça IP i les pàgines que sol·licites.</li>
+                <li><strong>Oracle Cloud Infrastructure</strong>: allotja el nostre servidor i la nostra base de dades a Londres, Regne Unit.</li>
+                <li><strong>Brevo</strong>: envia els correus de restabliment de contrasenya, així que rep l'adreça de correu.</li>
+                <li><strong>Google i Microsoft</strong>: només si decideixes iniciar sessió amb ells. S'apliquen les seves pròpies polítiques de privacitat.</li>
+                <li><strong>SerpAPI</strong>: obté els preus de Google Flights per a una cerca. Rep els paràmetres de cerca descrits més amunt i res que t'identifiqui.</li>
+                <li><strong>Aviasales (Travelpayouts)</strong>: en seguir un enllaç de reserva surts de PISTA. L'enllaç inclou la ruta, les dates, el nombre de passatgers, la moneda i l'identificador d'afiliat de PISTA, i a partir d'aquí s'aplica la política de privacitat d'Aviasales.</li>
+                <li><strong>Google Fonts, jsDelivr (esm.run), unpkg i OpenStreetMap</strong>: el teu navegador en descarrega directament les fonts, els components de la interfície, la biblioteca del mapa i les tessel·les del mapa, així que reben la teva adreça IP i les dades del navegador.</li>
+            </ul>
+            <p>Alguns d'aquests proveïdors tracten dades fora del Regne Unit i de l'Espai Econòmic Europeu, amb les garanties que estableixen les seves pròpies condicions.</p>
+
+            <h2>7. Quant de temps les conservem</h2>
+            <ul>
+                <li><strong>Dades del compte, perfil, preferències i viatges desats:</strong> fins que eliminis el compte. L'eliminació és immediata.</li>
+                <li><strong>Còpies de seguretat:</strong> les còpies nocturnes de la base de dades es conserven fins a 8 setmanes, així que les dades eliminades hi desapareixen en aquest termini.</li>
+                <li><strong>Tokens de restabliment de contrasenya:</strong> 30 minuts. <strong>Tokens de "recorda'm":</strong> 30 dies des del darrer ús, o fins que tanquis la sessió.</li>
+                <li><strong>Recomptes d'intents:</strong> s'esborren al cap d'un dia.</li>
+                <li><strong>Ús de convidats i registres de comptes eliminats:</strong> s'esborren l'1 de cada mes.</li>
+                <li><strong>Registres del servidor:</strong> 14 dies.</li>
+            </ul>
+
+            <h2>8. Els teus drets</h2>
+            <p>Pots sol·licitar l'accés, la rectificació, la supressió, la limitació o la portabilitat de les teves dades, oposar-te al seu ús i retirar el consentiment per a les dades opcionals. Gairebé tot ho pots fer tu mateix a El Meu Compte, inclosa l'eliminació del compte. Per a la resta, escriu a <a href="mailto:support@pistaflights.com">support@pistaflights.com</a>; responem en el termini d'un mes. També pots presentar una reclamació davant l'autoritat de protecció de dades del país on vius o treballes.</p>
+
+            <h2>9. Menors</h2>
+            <p>Els comptes de PISTA no estan pensats per a menors de 16 anys. Els passatgers menors es desen només com un nombre, mai amb dades sobre qui són.</p>
+
+            <h2>10. Seguretat</h2>
+            <p>Tot el trànsit fa servir HTTPS. Les contrasenyes i els tokens es desen només com a hash, i la base de dades no és accessible des d'internet.</p>
+
+            <h2>11. Canvis</h2>
+            <p>Si aquesta política canvia, la data de dalt canvia amb ella, i els canvis importants s'indiquen en aquesta pàgina.</p>
+
+            <p class="note">Aquesta política està disponible en anglès, castellà i català. Si les versions no coincideixen, preval la versió anglesa.</p>
+        </article>
+    </main>
 </body>
 </html>

@@ -1,0 +1,334 @@
+/* ==========================================================================
+   Info pages: help.html, privacy.html, terms.html.
+
+   One stylesheet for the three pages a stranger reads, the same way auth.css
+   serves the three auth sub-pages. It replaced help.html's inline <style> in
+   Phase 0E session 1; privacy.html and terms.html loaded no stylesheet at all.
+
+   A FIXED-DARK surface: white text over earth.jpg regardless of theme, so the
+   header logo is pinned to simplified-h-dark.svg and carries no
+   data-pista-logo (see .claude/rules/frontend.md). The favicon still swaps.
+   ========================================================================== */
+
+html, body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: Roboto, sans-serif;
+    color: #ffffff;
+    overscroll-behavior: none;
+}
+
+/* On html ONLY: shown until earth.jpg arrives. A background on body would paint
+   over .earth-bg, which sits at z-index: -1 inside the root stacking context. */
+html {
+    background: #0e0b16;
+}
+
+.earth-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: url("./pictures/earth.jpg") center / cover no-repeat;
+}
+
+a {
+    color: #d0bcff;
+}
+
+/* --- Back button ---------------------------------------------------------- */
+
+.back-button {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 1000;
+}
+
+.back-button md-filled-tonal-button {
+    height: 48px;
+    --md-filled-tonal-button-container-color: #244788;
+    --md-filled-tonal-button-label-text-color: #ffffff;
+    --md-filled-tonal-button-icon-color: #ffffff;
+    --md-filled-tonal-button-hover-label-text-color: #ffffff;
+    --md-filled-tonal-button-hover-icon-color: #ffffff;
+    --md-filled-tonal-button-focus-label-text-color: #ffffff;
+    --md-filled-tonal-button-pressed-label-text-color: #ffffff;
+}
+
+/* --- Layout --------------------------------------------------------------- */
+
+.container {
+    box-sizing: border-box;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 20px 60px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header-logo {
+    display: block;
+    height: 42px;
+    width: auto;
+    margin: 0 auto 24px;
+}
+
+.header h1 {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    margin: 0;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.header p {
+    font-size: 18px;
+    margin: 16px 0 0;
+}
+
+/* --- Help: search --------------------------------------------------------- */
+
+.search-box {
+    margin-bottom: 40px;
+}
+
+.search-box md-filled-text-field {
+    width: 100%;
+}
+
+.search-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 0 32px;
+}
+
+/* --- Help: FAQ accordion (native <details name="faq">) ---------------------- */
+
+.faq-section {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.faq-item {
+    background: rgba(35, 29, 52, 0.65);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    transition: background 0.3s ease;
+}
+
+.faq-item:hover,
+.faq-item[open] {
+    background: rgba(30, 26, 40, 0.9);
+}
+
+.faq-item summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 48px;
+    padding: 12px 24px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    border-radius: 16px;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary:focus-visible {
+    outline: 2px solid #d0bcff;
+    outline-offset: 2px;
+}
+
+.faq-q {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+}
+
+.faq-item summary md-icon {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.faq-item[open] summary md-icon {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    padding: 0 24px 20px;
+}
+
+.faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* --- Help: contact -------------------------------------------------------- */
+
+.contact-section {
+    background: rgba(20, 16, 30, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 48px;
+}
+
+.contact-section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+.contact-section p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 24px;
+}
+
+.contact-address {
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.contact-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.contact-buttons md-filled-tonal-button {
+    height: 48px;
+    --md-filled-tonal-button-container-color: rgba(255, 255, 255, 0.3);
+    --md-filled-tonal-button-label-text-color: #ffffff;
+    --md-filled-tonal-button-icon-color: #ffffff;
+    --md-filled-tonal-button-hover-label-text-color: #ffffff;
+    --md-filled-tonal-button-hover-icon-color: #ffffff;
+}
+
+/* --- Legal pages ------------------------------------------------------------
+   One <article data-legal-lang> per language; info.js un-hides the one that
+   matches i18n.js's language. English is the one visible without JavaScript. */
+
+.legal {
+    background: rgba(20, 16, 30, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 32px 40px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.legal[hidden] {
+    display: none;
+}
+
+.legal .updated {
+    margin-top: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.legal h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 32px 0 8px;
+}
+
+.legal ul {
+    padding-left: 22px;
+}
+
+.legal li {
+    margin-bottom: 6px;
+}
+
+.legal code {
+    font-size: 0.92em;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 1px 5px;
+    overflow-wrap: anywhere;
+}
+
+.legal .note {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 32px;
+    padding-top: 16px;
+}
+
+/* --- Phones --------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .back-button {
+        top: 16px;
+        left: 16px;
+    }
+
+    .container {
+        padding: 88px 16px 40px;
+    }
+
+    .header h1 {
+        font-size: 36px;
+        letter-spacing: 1px;
+    }
+
+    .header p {
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 22px;
+    }
+
+    .faq-item summary {
+        padding: 12px 16px;
+    }
+
+    .faq-q {
+        font-size: 16px;
+    }
+
+    .faq-answer {
+        padding: 0 16px 16px;
+    }
+
+    .contact-section {
+        padding: 24px 16px;
+    }
+
+    .contact-section h2 {
+        font-size: 26px;
+    }
+
+    .legal {
+        padding: 24px 16px;
+    }
+
+    .legal h2 {
+        font-size: 19px;
+    }
+}

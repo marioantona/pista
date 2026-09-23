@@ -1,14 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Terms - PISTA</title>
-    <style>body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PISTA – Terms of Use</title>
+    <meta name="description" content="The terms for using PISTA, a free multi-city flight search tool: what it does and does not do, credits, booking through Aviasales, and acceptable use." />
+    <link rel="canonical" href="https://pistaflights.com/terms.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PISTA" />
+    <meta property="og:title" content="PISTA – Terms of Use" />
+    <meta property="og:description" content="The terms for using PISTA, a free multi-city flight search tool: what it does and does not do, credits, booking through Aviasales, and acceptable use." />
+    <meta property="og:url" content="https://pistaflights.com/terms.html" />
+    <meta property="og:image" content="https://pistaflights.com/pictures/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The PISTA logo over the Earth seen from orbit, with the line: the cheapest order to fly a multi-city round trip" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" id="pista-favicon" href="pictures/logos/favicon-light.svg" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+    </script>
+    <script type="module">
+        import '@material/web/all.js';
+    </script>
+    <script src="theme.js?v=20260923a"></script>
+    <link rel="stylesheet" href="info.css?v=20260923a" />
+    <script src="i18n.js?v=20260923a" defer></script>
+    <script src="info.js?v=20260923a" defer></script>
 </head>
+
 <body>
-    <h1>Terms of use</h1>
-    <p>Last updated: April 2026</p>
-    <p>By using this tool, you agree to use it for personal travel planning only.</p>
-    <a href="index.html">Return to Home</a>
+    <div class="earth-bg"></div>
+    <div class="back-button">
+        <md-filled-tonal-button id="back-btn" data-i18n="nav-back">
+            <md-icon slot="icon">arrow_back</md-icon>
+            Back
+        </md-filled-tonal-button>
+    </div>
+
+    <main class="container">
+        <header class="header">
+            <img class="header-logo" src="pictures/logos/simplified-h-dark.svg" alt="PISTA" />
+            <h1 data-i18n="link-terms">Terms of Use</h1>
+        </header>
+
+        <!-- ================================================================ EN -->
+        <article class="legal" data-legal-lang="en" lang="en">
+            <p class="updated">Last updated: 23 September 2026</p>
+
+            <p>PISTA (pistaflights.com) is a free, non-commercial flight search tool built and run by Mario Antona as a portfolio project. By using it you agree to these terms.</p>
+
+            <h2>1. What PISTA is, and is not</h2>
+            <p>PISTA searches for the cheapest order in which to fly a multi-city round trip. It is a search tool only. It does not sell tickets, take payments or act as a travel agent, and you never enter into a booking contract with PISTA.</p>
+
+            <h2>2. Prices and results</h2>
+            <p>Prices come from third-party flight data at the moment you search. They are indicative: they can be wrong, change before you book, or no longer be available. Always check the price and conditions on the booking site before you pay. PISTA is not responsible for any difference between the price it showed and the price you are offered.</p>
+
+            <h2>3. Booking</h2>
+            <p>Booking links open Aviasales. Any booking you make is a contract between you and Aviasales, the airline or the travel agent you buy from, under their terms. Changes, cancellations, refunds and disruption are handled by them. PISTA may earn a commission from Aviasales on bookings made through its links, at no extra cost to you.</p>
+
+            <h2>4. Credits</h2>
+            <p>Credits are a free allowance that limits how many searches each person can run, because every search costs PISTA real money. They have no monetary value and cannot be bought, sold or transferred. Unused credits do not carry over to the next month. The allowance, the cost of a search and the refund rules for failed searches (described on the <a href="help.html">Help</a> page) may change at any time.</p>
+
+            <h2>5. Your account</h2>
+            <p>Give accurate information, keep your password to yourself, and keep to one account per person. You are responsible for what happens under your account. You can delete it at any time from My Account.</p>
+
+            <h2>6. Acceptable use</h2>
+            <p>Do not:</p>
+            <ul>
+                <li>access PISTA with bots, scrapers or other automated means, or run searches in bulk;</li>
+                <li>try to get around credits, attempt limits or any other security measure, including by creating several accounts;</li>
+                <li>interfere with the service, probe it for vulnerabilities without permission, or put an unreasonable load on it;</li>
+                <li>use PISTA for anything unlawful.</li>
+            </ul>
+
+            <h2>7. Suspension and changes to the service</h2>
+            <p>PISTA may suspend or delete accounts that break these terms. Because it is a free portfolio project, it may also change, limit or stop the service at any time.</p>
+
+            <h2>8. No warranty</h2>
+            <p>PISTA is provided "as is", without any guarantee that it will be available, accurate, complete or suitable for your purposes.</p>
+
+            <h2>9. Liability</h2>
+            <p>As far as the law allows, PISTA is not liable for any loss arising from using it, including price differences, bookings you did or did not make, or travel disruption. Nothing in these terms limits liability that cannot legally be limited, or affects your statutory rights as a consumer.</p>
+
+            <h2>10. Third-party content</h2>
+            <p>Map data © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap contributors</a>. Flight prices come from Google Flights, fetched through SerpAPI. Airline names and logos belong to their owners.</p>
+
+            <h2>11. Privacy</h2>
+            <p>How PISTA handles personal data is described in the <a href="privacy.html">Privacy Policy</a>.</p>
+
+            <h2>12. Changes to these terms</h2>
+            <p>If these terms change, the date at the top changes with them. Continuing to use PISTA after a change means you accept the new terms.</p>
+
+            <h2>13. Contact</h2>
+            <p><a href="mailto:support@pistaflights.com">support@pistaflights.com</a></p>
+
+            <p class="note">These terms are available in English, Spanish and Catalan. If the versions differ, the English version prevails.</p>
+        </article>
+
+        <!-- ================================================================ ES -->
+        <article class="legal" data-legal-lang="es" lang="es" hidden>
+            <p class="updated">Última actualización: 23 de septiembre de 2026</p>
+
+            <p>PISTA (pistaflights.com) es un buscador de vuelos gratuito y sin ánimo de lucro, creado y gestionado por Mario Antona como proyecto de portfolio. Al usarlo, aceptas estas condiciones.</p>
+
+            <h2>1. Qué es PISTA, y qué no es</h2>
+            <p>PISTA busca el orden más barato para volar un viaje de ida y vuelta por varias ciudades. Es solo un buscador. No vende billetes, no cobra pagos ni actúa como agencia de viajes, y nunca celebras un contrato de reserva con PISTA.</p>
+
+            <h2>2. Precios y resultados</h2>
+            <p>Los precios proceden de datos de vuelos de terceros en el momento de la búsqueda. Son orientativos: pueden ser incorrectos, cambiar antes de que reserves o dejar de estar disponibles. Comprueba siempre el precio y las condiciones en el sitio de reserva antes de pagar. PISTA no se hace responsable de ninguna diferencia entre el precio que mostró y el que te ofrezcan.</p>
+
+            <h2>3. Reservas</h2>
+            <p>Los enlaces de reserva abren Aviasales. Cualquier reserva que hagas es un contrato entre tú y Aviasales, la aerolínea o la agencia a la que compres, según sus condiciones. Los cambios, cancelaciones, reembolsos e incidencias los gestionan ellos. PISTA puede recibir una comisión de Aviasales por las reservas hechas a través de sus enlaces, sin ningún coste adicional para ti.</p>
+
+            <h2>4. Créditos</h2>
+            <p>Los créditos son una asignación gratuita que limita cuántas búsquedas puede hacer cada persona, porque cada búsqueda le cuesta dinero real a PISTA. No tienen valor monetario y no se pueden comprar, vender ni transferir. Los créditos no usados no se acumulan al mes siguiente. La asignación, el coste de una búsqueda y las reglas de devolución de las búsquedas fallidas (descritas en la página de <a href="help.html">Ayuda</a>) pueden cambiar en cualquier momento.</p>
+
+            <h2>5. Tu cuenta</h2>
+            <p>Facilita información correcta, no compartas tu contraseña y limítate a una cuenta por persona. Eres responsable de lo que ocurra con tu cuenta. Puedes eliminarla en cualquier momento desde Mi Cuenta.</p>
+
+            <h2>6. Uso aceptable</h2>
+            <p>No está permitido:</p>
+            <ul>
+                <li>acceder a PISTA con bots, scrapers u otros medios automatizados, ni hacer búsquedas de forma masiva;</li>
+                <li>intentar eludir los créditos, los límites de intentos o cualquier otra medida de seguridad, incluso creando varias cuentas;</li>
+                <li>interferir en el servicio, buscar vulnerabilidades sin permiso o someterlo a una carga desproporcionada;</li>
+                <li>usar PISTA para cualquier fin ilícito.</li>
+            </ul>
+
+            <h2>7. Suspensión y cambios en el servicio</h2>
+            <p>PISTA puede suspender o eliminar las cuentas que incumplan estas condiciones. Al tratarse de un proyecto de portfolio gratuito, también puede cambiar, limitar o interrumpir el servicio en cualquier momento.</p>
+
+            <h2>8. Sin garantía</h2>
+            <p>PISTA se ofrece "tal cual", sin ninguna garantía de que esté disponible o sea exacto, completo o adecuado para tus fines.</p>
+
+            <h2>9. Responsabilidad</h2>
+            <p>En la medida en que la ley lo permita, PISTA no es responsable de ninguna pérdida derivada de su uso, incluidas las diferencias de precio, las reservas que hicieras o dejaras de hacer, o las incidencias en tu viaje. Nada de estas condiciones limita una responsabilidad que legalmente no pueda limitarse, ni afecta a tus derechos legales como consumidor.</p>
+
+            <h2>10. Contenido de terceros</h2>
+            <p>Datos del mapa © <a href="https://www.openstreetmap.org/copyright" rel="noopener">colaboradores de OpenStreetMap</a>. Los precios de los vuelos proceden de Google Flights, obtenidos a través de SerpAPI. Los nombres y logotipos de las aerolíneas pertenecen a sus propietarios.</p>
+
+            <h2>11. Privacidad</h2>
+            <p>Cómo trata PISTA los datos personales se describe en la <a href="privacy.html">Política de privacidad</a>.</p>
+
+            <h2>12. Cambios en estas condiciones</h2>
+            <p>Si estas condiciones cambian, la fecha de arriba cambia con ellas. Seguir usando PISTA después de un cambio supone aceptar las nuevas condiciones.</p>
+
+            <h2>13. Contacto</h2>
+            <p><a href="mailto:support@pistaflights.com">support@pistaflights.com</a></p>
+
+            <p class="note">Estas condiciones están disponibles en inglés, español y catalán. Si las versiones no coinciden, prevalece la versión en inglés.</p>
+        </article>
+
+        <!-- ================================================================ CA -->
+        <article class="legal" data-legal-lang="ca" lang="ca" hidden>
+            <p class="updated">Darrera actualització: 23 de setembre de 2026</p>
+
+            <p>PISTA (pistaflights.com) és un cercador de vols gratuït i sense ànim de lucre, creat i gestionat per Mario Antona com a projecte de portfoli. En fer-lo servir, acceptes aquestes condicions.</p>
+
+            <h2>1. Què és PISTA, i què no és</h2>
+            <p>PISTA cerca l'ordre més barat per volar un viatge d'anada i tornada per diverses ciutats. És només un cercador. No ven bitllets, no cobra pagaments ni actua com a agència de viatges, i mai no subscrius un contracte de reserva amb PISTA.</p>
+
+            <h2>2. Preus i resultats</h2>
+            <p>Els preus provenen de dades de vols de tercers en el moment de la cerca. Són orientatius: poden ser incorrectes, canviar abans que reservis o deixar d'estar disponibles. Comprova sempre el preu i les condicions al lloc de reserva abans de pagar. PISTA no es fa responsable de cap diferència entre el preu que va mostrar i el que t'ofereixin.</p>
+
+            <h2>3. Reserves</h2>
+            <p>Els enllaços de reserva obren Aviasales. Qualsevol reserva que facis és un contracte entre tu i Aviasales, l'aerolínia o l'agència a qui compris, segons les seves condicions. Els canvis, cancel·lacions, reemborsaments i incidències els gestionen ells. PISTA pot rebre una comissió d'Aviasales per les reserves fetes a través dels seus enllaços, sense cap cost addicional per a tu.</p>
+
+            <h2>4. Crèdits</h2>
+            <p>Els crèdits són una assignació gratuïta que limita quantes cerques pot fer cada persona, perquè cada cerca li costa diners reals a PISTA. No tenen valor monetari i no es poden comprar, vendre ni transferir. Els crèdits no utilitzats no s'acumulen al mes següent. L'assignació, el cost d'una cerca i les regles de devolució de les cerques fallides (descrites a la pàgina d'<a href="help.html">Ajuda</a>) poden canviar en qualsevol moment.</p>
+
+            <h2>5. El teu compte</h2>
+            <p>Facilita informació correcta, no comparteixis la contrasenya i limita't a un compte per persona. Ets responsable del que passi amb el teu compte. El pots eliminar en qualsevol moment des d'El Meu Compte.</p>
+
+            <h2>6. Ús acceptable</h2>
+            <p>No està permès:</p>
+            <ul>
+                <li>accedir a PISTA amb bots, scrapers o altres mitjans automatitzats, ni fer cerques de manera massiva;</li>
+                <li>intentar eludir els crèdits, els límits d'intents o qualsevol altra mesura de seguretat, fins i tot creant diversos comptes;</li>
+                <li>interferir en el servei, cercar-hi vulnerabilitats sense permís o sotmetre'l a una càrrega desproporcionada;</li>
+                <li>fer servir PISTA per a qualsevol finalitat il·lícita.</li>
+            </ul>
+
+            <h2>7. Suspensió i canvis en el servei</h2>
+            <p>PISTA pot suspendre o eliminar els comptes que incompleixin aquestes condicions. Com que és un projecte de portfoli gratuït, també pot canviar, limitar o interrompre el servei en qualsevol moment.</p>
+
+            <h2>8. Sense garantia</h2>
+            <p>PISTA s'ofereix "tal com és", sense cap garantia que estigui disponible o que sigui exacte, complet o adequat per als teus fins.</p>
+
+            <h2>9. Responsabilitat</h2>
+            <p>En la mesura que la llei ho permeti, PISTA no és responsable de cap pèrdua derivada del seu ús, incloses les diferències de preu, les reserves que fessis o deixessis de fer, o les incidències del teu viatge. Res d'aquestes condicions limita una responsabilitat que legalment no es pugui limitar, ni afecta els teus drets legals com a consumidor.</p>
+
+            <h2>10. Contingut de tercers</h2>
+            <p>Dades del mapa © <a href="https://www.openstreetmap.org/copyright" rel="noopener">col·laboradors d'OpenStreetMap</a>. Els preus dels vols provenen de Google Flights, obtinguts a través de SerpAPI. Els noms i logotips de les aerolínies pertanyen als seus propietaris.</p>
+
+            <h2>11. Privacitat</h2>
+            <p>Com tracta PISTA les dades personals es descriu a la <a href="privacy.html">Política de privacitat</a>.</p>
+
+            <h2>12. Canvis en aquestes condicions</h2>
+            <p>Si aquestes condicions canvien, la data de dalt canvia amb elles. Continuar fent servir PISTA després d'un canvi implica acceptar les noves condicions.</p>
+
+            <h2>13. Contacte</h2>
+            <p><a href="mailto:support@pistaflights.com">support@pistaflights.com</a></p>
+
+            <p class="note">Aquestes condicions estan disponibles en anglès, castellà i català. Si les versions no coincideixen, preval la versió anglesa.</p>
+        </article>
+    </main>
 </body>
 </html>

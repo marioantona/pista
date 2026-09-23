@@ -4,6 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PISTA – Help & Support</title>
+    <meta name="description" content="How PISTA plans multi-city round trips: searching, credits, saved trips, booking on Aviasales, and your account." />
+    <link rel="canonical" href="https://pistaflights.com/help.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PISTA" />
+    <meta property="og:title" content="PISTA – Help & Support" />
+    <meta property="og:description" content="How PISTA plans multi-city round trips: searching, credits, saved trips, booking on Aviasales, and your account." />
+    <meta property="og:url" content="https://pistaflights.com/help.html" />
+    <meta property="og:image" content="https://pistaflights.com/pictures/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The PISTA logo over the Earth seen from orbit, with the line: the cheapest order to fly a multi-city round trip" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" id="pista-favicon" href="pictures/logos/favicon-light.svg" />
 
     <!-- Fonts & Material You -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
@@ -22,214 +35,28 @@
         import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
         document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
     </script>
-    <script src="theme.js?v=20260922a"></script>
-
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: Roboto, sans-serif;
-            /*background: black;*/
-            color: white;
-            overscroll-behavior: none;
-        }
-
-        .earth-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background:
-                url("./pictures/earth.jpg")
-                center / cover no-repeat;
-            background-attachment: fixed;
-        }
-
-        .back-button {
-            position: fixed;
-            top: 24px;
-            left: 24px;
-            z-index: 1000;
-        }
-
-        .back-button md-filled-tonal-button {
-            height: 45px;
-            --md-filled-tonal-button-container-color: #244788;
-            --md-filled-tonal-button-label-text-color: #ffffff; 
-            --md-filled-tonal-button-icon-color: #ffffff; 
-            --md-filled-tonal-button-hover-label-text-color: #ffffff;
-            --md-filled-tonal-button-hover-icon-color: #ffffff;
-            border-radius: 25px;
-        }
-
-
-
-        /* Main container */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 100px 20px 60px;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-
-        .header h1 {
-            font-size: 56px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            margin: 0;
-            text-shadow: 0 4px 16px rgba(0,0,0,0.5);
-        }
-
-        .header p {
-            font-size: 18px;
-            margin: 16px 0 0 0;
-        }
-
-        /* Search box */
-        .search-box {
-            margin-bottom: 40px;
-        }
-
-        .search-box md-filled-text-field {
-            width: 100%;
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            margin-bottom: 32px;
-        }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0 0 20px 0;
-            color: rgba(255,255,255,0.95);
-        }
-
-        /* FAQ Items */
-        .faq-item {
-            background: rgba(35, 29, 52, 0.65);
-            backdrop-filter: blur(8px);
-            border-radius: 16px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .faq-item:hover {
-            background: rgba(30, 26, 40, 0.9);
-        }
-
-        .faq-question {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 24px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .faq-question h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 500;
-            flex: 1;
-        }
-
-        .faq-question md-icon {
-            transition: transform 0.3s ease;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .faq-item.active .faq-question md-icon {
-            transform: rotate(180deg);
-        }
-
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-            padding: 0 24px;
-        }
-
-        .faq-item.active .faq-answer {
-            max-height: 500px;
-            padding: 0 24px 20px 24px;
-        }
-
-        .faq-answer p {
-            margin: 0;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.85);
-        }
-
-        /* Contact section */
-        .contact-section {
-            background: rgba(20, 16, 30, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 20px;
-            padding: 32px;
-            text-align: center;
-            margin-top: 48px;
-        }
-
-        .contact-section h2 {
-            font-size: 32px;
-            font-weight: 700;
-            margin: 0 0 12px 0;
-        }
-
-        .contact-section p {
-            font-size: 16px;
-            color: rgba(255,255,255,0.8);
-            margin: 0 0 24px 0;
-        }
-
-        .contact-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .contact-buttons md-filled-tonal-button {
-            height: 48px;
-        }
-
-        /* Custom colors */
-        md-filled-button {
-            --md-filled-button-container-color: #6750A4;
-        }
-
-        md-filled-tonal-button {
-            --md-filled-tonal-button-container-color: rgba(255, 255, 255, 0.3);
-            --md-filled-tonal-button-label-text-color: white;
-        }
-    </style>
-    <script src="i18n.js?v=20260922a" defer></script>
+    <script src="theme.js?v=20260923a"></script>
+    <link rel="stylesheet" href="info.css?v=20260923a" />
+    <script src="i18n.js?v=20260923a" defer></script>
+    <script src="info.js?v=20260923a" defer></script>
 </head>
 
 <body>
     <div class="earth-bg"></div>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <img src="pictures/logos/simplified-h-dark.svg" alt="PISTA" style="height: 42px; width: auto; object-fit: contain; margin-bottom: 24px; display: block; margin-left: auto; margin-right: auto;" />
+    <div class="back-button">
+        <md-filled-tonal-button id="back-btn" data-i18n="nav-back">
+            <md-icon slot="icon">arrow_back</md-icon>
+            Back
+        </md-filled-tonal-button>
+    </div>
+
+    <main class="container">
+        <header class="header">
+            <img class="header-logo" src="pictures/logos/simplified-h-dark.svg" alt="PISTA" />
             <h1 data-i18n="help-title">Help & Support</h1>
             <p data-i18n="help-subtitle">Find answers to frequently asked questions about PISTA</p>
-            <div class="back-button">
-                <md-filled-tonal-button onclick="history.back()" data-i18n="nav-back">
-                    <md-icon slot="icon">arrow_back</md-icon>
-                    Back
-                </md-filled-tonal-button>
-            </div>
-        </div>
+        </header>
 
-        <!-- Search -->
         <div class="search-box">
             <md-filled-text-field
                 label="Search for help"
@@ -239,188 +66,220 @@
                 <md-icon slot="leading-icon">search</md-icon>
             </md-filled-text-field>
         </div>
+        <p class="search-empty" id="search-empty" data-i18n="search-no-results" hidden>No questions match your search.</p>
 
-        <!-- FAQ Section: Getting Started -->
-        <div class="faq-section">
-            <h2 class="section-title" data-i18n="faq-sect-1">Getting Started</h2>
+        <section class="faq-section">
+            <h2 class="section-title" data-i18n="faq-sect-about">About PISTA</h2>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>What is PISTA?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-what">What is PISTA?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>PISTA (Passenger Itinerary Self Ticketing Algorithm) is an intelligent flight booking platform that helps you search for flights, plan routes, and manage your travel itinerary efficiently. Our system uses advanced algorithms to find you the best flight options based on your preferences.</p>
+                    <p data-i18n="faq-a-what">PISTA plans multi-city round trips. Tell it where you start, how many places you want to visit and how long to stay in each, and it searches for the cheapest order to fly them in before bringing you home. It is a free portfolio project, built and run by one independent developer.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>Do I need to create an account to use PISTA?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-tickets">Does PISTA sell tickets or take payment?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>You can search for flights without an account, but creating an account allows you to save your searches, manage bookings, and receive personalized recommendations. Sign up is free and takes less than a minute.</p>
+                    <p data-i18n="faq-a-tickets">No. PISTA never takes payment and never issues tickets. Each flight in the itinerary you choose links to Aviasales, where you book and pay. PISTA may earn a commission from Aviasales on bookings made through those links, at no extra cost to you.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>How do I create an account?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-prices">Where do the prices come from?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Click the "Login / Sign Up" button in the top right corner of the homepage. You can register using your email address or sign in with Google or Apple. Follow the prompts to complete your registration.</p>
+                    <p data-i18n="faq-a-prices">From Google Flights, looked up live at the moment you search. Fares change constantly, so the price you see when you book may differ from the one PISTA showed you.</p>
                 </div>
-            </div>
-        </div>
+            </details>
+        </section>
 
-        <!-- FAQ Section: Booking Flights -->
-        <div class="faq-section">
-            <h2 class="section-title" data-i18n="faq-sect-2">Booking Flights</h2>
+        <section class="faq-section">
+            <h2 class="section-title" data-i18n="faq-sect-search">Planning a trip</h2>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>How do I search for flights?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-how">How do I plan a trip?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Click on "Search Flights" from the sidebar on the homepage. Enter your departure city, destination, travel dates, and number of passengers. Our system will search across multiple airlines to find you the best options.</p>
+                    <p data-i18n="faq-a-how">Enter the airport you start and finish at, your departure date, how many destinations you want (1 to 10), how many days to spend in each (1 to 20) and who is travelling (up to 9 passengers). You can also pick a travel region. The cost in credits is shown before you search.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>Can I book multi-city or round-trip flights?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-constraints">Can I choose places to include or avoid?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Yes! PISTA supports one-way, round-trip, and multi-city itineraries. Use the "Plan Route" feature to create complex itineraries with multiple stops and connections.</p>
+                    <p data-i18n="faq-a-constraints">Yes. Under the advanced options you can list desired destinations, which every result will include, and countries to avoid, which no result will visit. You can also avoid the country you start from.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>How far in advance can I book a flight?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-horizon">How far ahead can I search?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>You can typically book flights up to 11 months in advance, though this varies by airline. We recommend booking 2-3 months ahead for domestic flights and 3-6 months for international travel to get the best prices.</p>
+                    <p data-i18n="faq-a-horizon">Your last flight must be no more than 330 days away, because airlines have not published fares beyond that. The form tells you if a trip runs past that point.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>What payment methods do you accept?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-noresults">Why did my search find no routes?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>We accept major credit cards (Visa, Mastercard, American Express), debit cards, PayPal, and Apple Pay. All transactions are encrypted and secure.</p>
+                    <p data-i18n="faq-a-noresults">Usually because the constraints are too tight: many desired destinations, many countries avoided, or a region with few flights on your dates. Try fewer destinations, another date or a wider region. If the flight data provider itself is not answering, PISTA tells you that instead.</p>
                 </div>
-            </div>
-        </div>
+            </details>
+        </section>
 
-        <!-- FAQ Section: Managing Bookings -->
-        <div class="faq-section">
-            <h2 class="section-title" data-i18n="faq-sect-3">Managing Bookings</h2>
+        <section class="faq-section">
+            <h2 class="section-title" data-i18n="faq-sect-credits">Credits</h2>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>How do I view my booking confirmation?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-credits">What are credits?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>After booking, you'll receive a confirmation email with your itinerary and booking reference. You can also view all your bookings by logging into your account and going to "My Bookings".</p>
+                    <p data-i18n="faq-a-credits">Every search looks up live prices from a paid flight data provider, and credits cover that. A basic search costs 2 credits; bigger searches, or ones with desired destinations, check many more routes and cost up to 10. Checking the price of a saved trip costs 1. The cost is always shown before you search. Credits are free and cannot be bought.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>Can I cancel or modify my booking?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-allowance">How many credits do I get?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Cancellation and modification policies vary by airline and fare type. Log into your account, go to "My Bookings", and select the booking you wish to modify. Please note that changes may incur fees depending on the airline's policy.</p>
+                    <p data-i18n="faq-a-allowance">Registered accounts get 10 credits a month, topped up on the 1st. Guests get a smaller allowance per internet connection, which also resets every month.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>What if my flight is delayed or cancelled?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-refund">Do I pay for a search that fails?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>If your flight is delayed or cancelled, you'll receive notifications via email and SMS (if enabled). Contact the airline directly for rebooking options. You can also reach out to our support team for assistance.</p>
+                    <p data-i18n="faq-a-refund">No. When a search fails, its credits are returned automatically, up to 3 refunds per calendar month.</p>
                 </div>
-            </div>
-        </div>
+            </details>
+        </section>
 
-        <!-- FAQ Section: Account & Security -->
-        <div class="faq-section">
-            <h2 class="section-title" data-i18n="faq-sect-4">Account & Security</h2>
+        <section class="faq-section">
+            <h2 class="section-title" data-i18n="faq-sect-trips">Saved trips and booking</h2>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>How do I reset my password?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-save">How do I save a trip?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Click on "Login / Sign Up", then select "Forgot Password?" on the login page. Enter your email address and we'll send you instructions to reset your password.</p>
+                    <p data-i18n="faq-a-save">Press the heart button on a result. With an account the trip is stored in your account and listed under Itineraries. As a guest it is kept in this browser only, and moved to your account the next time you sign in here.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>Is my payment information secure?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-verify">Can I check whether a saved trip's price has changed?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Absolutely. We use industry-standard SSL encryption to protect your data. We never store your full credit card information on our servers. All payment processing is handled by certified secure payment gateways.</p>
+                    <p data-i18n="faq-a-verify">Yes, with an account. The price check button on a saved trip looks up every flight again for 1 credit, and an arrow shows whether the total went up or down.</p>
                 </div>
-            </div>
+            </details>
 
-            <div class="faq-item" onclick="toggleFAQ(this)">
-                <div class="faq-question">
-                    <h3>Can I delete my account?</h3>
-                    <md-icon>expand_more</md-icon>
-                </div>
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-book">How do I book, and who handles changes or cancellations?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
                 <div class="faq-answer">
-                    <p>Yes, you can delete your account at any time from your account settings. Please note that you should cancel any active bookings before deleting your account. Account deletion is permanent and cannot be undone.</p>
+                    <p data-i18n="faq-a-book">Each flight in the itinerary you choose opens on Aviasales, where you book it. Your booking is with the airline or travel agent you buy from there, so changes, cancellations, refunds and delays are handled by them. PISTA never sees what you booked.</p>
                 </div>
+            </details>
+        </section>
+
+        <section class="faq-section">
+            <h2 class="section-title" data-i18n="faq-sect-account">Your account</h2>
+
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-signin">How do I sign in?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
+                <div class="faq-answer">
+                    <p data-i18n="faq-a-signin">With an email address and password, or with a Google or Microsoft account. You can also continue as a guest without signing in.</p>
+                </div>
+            </details>
+
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-remember">What does Remember Me do?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
+                <div class="faq-answer">
+                    <p data-i18n="faq-a-remember">It keeps you signed in on this device for as long as you come back at least once every 30 days. Without it you are signed out after 30 minutes of inactivity, even if your browser restores its tabs.</p>
+                </div>
+            </details>
+
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-reset">How do I reset my password?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
+                <div class="faq-answer">
+                    <p data-i18n="faq-a-reset">Choose Forgot Password? in the sign-in window and enter your email address. If it belongs to an account, you will receive a link that works once and expires after 30 minutes. Resetting your password signs you out on every other device.</p>
+                </div>
+            </details>
+
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-delete">How do I delete my account?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
+                <div class="faq-answer">
+                    <p data-i18n="faq-a-delete">Open My Account, go to Privacy &amp; Security and choose Delete Account. You confirm with your password, or by signing in again with Google or Microsoft. Deletion is immediate and permanent, and removes your saved trips.</p>
+                </div>
+            </details>
+
+            <details class="faq-item" name="faq">
+                <summary>
+                    <span class="faq-q" data-i18n="faq-q-settings">Can I change the language, currency or theme?</span>
+                    <md-icon aria-hidden="true">expand_more</md-icon>
+                </summary>
+                <div class="faq-answer">
+                    <p data-i18n="faq-a-settings">With an account, choose your language under My Account, and your currency and search region under Unit &amp; Currency. Guests get their browser's language and the default currency. The theme button switches between light and dark mode.</p>
+                </div>
+            </details>
+        </section>
+
+        <section class="contact-section" id="contact">
+            <h2 data-i18n="contact-title">Still need help?</h2>
+            <p><span data-i18n="contact-body">Email us and we will get back to you.</span> <span class="contact-address">support@pistaflights.com</span></p>
+            <div class="contact-buttons">
+                <md-filled-tonal-button href="mailto:support@pistaflights.com" data-i18n="contact-email-btn">
+                    <md-icon slot="icon">mail</md-icon>
+                    Email support
+                </md-filled-tonal-button>
+                <md-filled-tonal-button href="privacy.html" data-i18n="link-privacy">Privacy Policy</md-filled-tonal-button>
+                <md-filled-tonal-button href="terms.html" data-i18n="link-terms">Terms of Use</md-filled-tonal-button>
             </div>
-        </div>
-
-    <script>
-        function toggleFAQ(element) {
-            const isActive = element.classList.contains('active');
-            
-            // Close all FAQ items
-            document.querySelectorAll('.faq-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Open clicked item if it wasn't already active
-            if (!isActive) {
-                element.classList.add('active');
-            }
-        }
-
-        // Search functionality
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const faqItems = document.querySelectorAll('.faq-item');
-            
-            faqItems.forEach(item => {
-                const question = item.querySelector('.faq-question h3').textContent.toLowerCase();
-                const answer = item.querySelector('.faq-answer p').textContent.toLowerCase();
-                
-                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = searchTerm ? 'none' : 'block';
-                }
-            });
-        });
-    </script>
+        </section>
+    </main>
 </body>
 </html>
