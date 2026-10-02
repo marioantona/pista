@@ -104,3 +104,8 @@ and says so in a `Co-Authored-By` trailer. How that works matters more than the 
 ## Licence
 
 All rights reserved. You're welcome to read it; it isn't licensed for reuse.
+
+The exception is the airport data in `pista-api/`, which comes from
+[JSON-Airports](https://github.com/jbrooksuk/JSON-Airports) by James Brooks and is MIT-licensed; see
+[`pista-api/backup/AIRPORTS-LICENSE.txt`](pista-api/backup/AIRPORTS-LICENSE.txt). Map tiles are
+© OpenStreetMap contributors.
